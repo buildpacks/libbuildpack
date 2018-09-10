@@ -44,7 +44,7 @@ func (a Application) applicationContents() []string {
 	return contents
 }
 
-// DefaultApplication creates a new instance of application, extracting the Root path from the working directory.
+// DefaultApplication creates a new instance of Application, extracting the Root path from the working directory.
 func DefaultApplication(logger Logger) (Application, error) {
 	root, err := os.Getwd()
 	if err != nil {

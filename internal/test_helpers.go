@@ -17,11 +17,109 @@
 package internal
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 )
+
+type console struct {
+	errRead  *os.File
+	errWrite *os.File
+	inRead   *os.File
+	inWrite  *os.File
+	outRead  *os.File
+	outWrite *os.File
+}
+
+// Err returns a string representation of captured stderr.
+func (c console) Err(t *testing.T) string {
+	t.Helper()
+
+	err := c.errWrite.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bytes, err := ioutil.ReadAll(c.errRead)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return string(bytes)
+}
+
+// In writes a string and closes the connection once complete.
+func (c console) In(t *testing.T, string string) {
+	t.Helper()
+
+	_, err := fmt.Fprint(c.inWrite, string)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = c.inWrite.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// Out returns a string representation of captured stdout.
+func (c console) Out(t *testing.T) string {
+	t.Helper()
+
+	err := c.outWrite.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bytes, err := ioutil.ReadAll(c.outRead)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return string(bytes)
+}
+
+// ReplaceConsole replaces the console files (os.Stderr, os.Stdin, os.Stdout).  Returns a function for use with defer in
+// order to reset the previous values
+//
+// c, d := ReplaceConsole(t)
+// defer d()
+func ReplaceConsole(t *testing.T) (console, func()) {
+	t.Helper()
+
+	var console console
+	var err error
+
+	errPrevious := os.Stderr
+	console.errRead, console.errWrite, err = os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Stderr = console.errWrite
+
+	inPrevious := os.Stdin
+	console.inRead, console.inWrite, err = os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Stdin = console.inRead
+
+	outPrevious := os.Stdout
+	console.outRead, console.outWrite, err = os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Stdout = console.outWrite
+
+	return console, func() {
+		os.Stderr = errPrevious
+		os.Stdin = inPrevious
+		os.Stdout = outPrevious
+	}
+}
 
 // ReplaceWorkingDirectory replaces the current working directory (os.Getwd()) with a new value.  Returns a function for
 // use with defer in order to reset the previous value
