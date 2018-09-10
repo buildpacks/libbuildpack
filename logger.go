@@ -62,6 +62,11 @@ func (l Logger) IsInfoEnabled() bool {
 	return l.info != nil
 }
 
+// String makes Logger satisfy the Stringer interface.
+func (l Logger) String() string {
+	return fmt.Sprintf("Logger{ debug: %v, info: %v }", l.debug, l.info)
+}
+
 // NewLogger creates a new instance of Logger, configuring the debug and info writers to use.  If writer is nil, that
 // logging level is disabled.
 func NewLogger(debug io.Writer, info io.Writer) Logger {
