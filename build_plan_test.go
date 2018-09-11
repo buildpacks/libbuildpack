@@ -21,7 +21,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Masterminds/semver"
 	"github.com/buildpack/libbuildpack"
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/sclevine/spec"
@@ -56,7 +55,7 @@ func testBuildPlan(t *testing.T, when spec.G, it spec.S) {
 
 [bravo]
   name = "bravo-name"
-  `)
+`)
 
 		buildPlan, err := libbuildpack.DefaultBuildPlan(logger)
 		if err != nil {
@@ -115,13 +114,8 @@ func testBuildPlan(t *testing.T, when spec.G, it spec.S) {
 			t.Fatal(err)
 		}
 
-		expected, err := semver.NewVersion("1.0")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if !actual.Check(expected) {
-			t.Errorf("BuildPlanDependency.Version = %v, expected %v", actual, expected)
+		if actual != "1.*" {
+			t.Errorf("BuildPlanDependency.Version = %s, expected 1.*", actual)
 		}
 	})
 

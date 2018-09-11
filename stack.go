@@ -21,6 +21,7 @@ import (
 	"os"
 )
 
+// Stack is the name of a stack
 type Stack string
 
 // DefaultStack creates a new instance of Stack, extracting the name from the PACK_STACK_NAME environment variable.

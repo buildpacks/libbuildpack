@@ -23,7 +23,6 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/Masterminds/semver"
 )
 
 // BuildPlan represents the dependencies contributed by a build.
@@ -54,15 +53,14 @@ func (d BuildPlanDependency) String() string {
 	return fmt.Sprintf("BuildPlanDependency{ %s }", strings.Join(entries, ", "))
 }
 
-// Version returns the version of this dependency as a semver.Constraints.  Returns an error if the version is missing
-// or invalid.
-func (d BuildPlanDependency) Version() (*semver.Constraints, error) {
+// Version returns the version of this dependency.  Returns an error if the version is missing or invalid.
+func (d BuildPlanDependency) Version() (string, error) {
 	v, ok := d["version"].(string)
 	if !ok {
-		return nil, fmt.Errorf("version key does not exist")
+		return "", fmt.Errorf("version key does not exist")
 	}
 
-	return semver.NewConstraint(v)
+	return v, nil
 }
 
 // DefaultBuildPlan creates a new instance of BuildPlan, extracting the contents from stdin.
@@ -80,6 +78,5 @@ func NewBuildPlan(in io.Reader, logger Logger) (BuildPlan, error) {
 	}
 
 	logger.Debug("BuildPlan: %s", p)
-
 	return p, nil
 }
