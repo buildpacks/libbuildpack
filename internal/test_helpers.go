@@ -18,6 +18,7 @@ package internal
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -92,6 +93,19 @@ func ProtectEnv(t *testing.T, key string) func() {
 	previous := os.Getenv(key)
 
 	return func() { os.Setenv(key, previous) }
+}
+
+// ReplaceArgs replaces the current command line arguments (os.Args) with a new collection of values.  Returns a
+// function suitable for use with defer in order to reset the previous values
+//
+//  defer ReplaceArgs(t, "alpha")()
+func ReplaceArgs(t *testing.T, args ...string) func() {
+	t.Helper()
+
+	previous := os.Args
+	os.Args = args
+
+	return func() { os.Args = previous }
 }
 
 // ReplaceConsole replaces the console files (os.Stderr, os.Stdin, os.Stdout).  Returns a function for use with defer in
@@ -180,4 +194,25 @@ func ScratchDir(t *testing.T, prefix string) string {
 	}
 
 	return abs
+}
+
+// WriteToFile writes the contents of an io.Reader to a file.
+func WriteToFile(source io.Reader, destFile string, mode os.FileMode) error {
+	err := os.MkdirAll(filepath.Dir(destFile), 0755)
+	if err != nil {
+		return err
+	}
+
+	fh, err := os.OpenFile(destFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
+	if err != nil {
+		return err
+	}
+	defer fh.Close()
+
+	_, err = io.Copy(fh, source)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
