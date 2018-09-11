@@ -17,7 +17,10 @@
 package libbuildpack
 
 import (
+	"bytes"
 	"os"
+
+	"github.com/BurntSushi/toml"
 )
 
 func fileExists(file string) (bool, error) {
@@ -31,4 +34,14 @@ func fileExists(file string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func toTomlString(v interface{}) (string, error) {
+	var b bytes.Buffer
+
+	if err := toml.NewEncoder(&b).Encode(v); err != nil {
+		return "", err
+	}
+
+	return b.String(), nil
 }
