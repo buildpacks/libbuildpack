@@ -71,7 +71,8 @@ func (d Detect) Pass(buildPlan BuildPlan) {
 
 // String makes Detect satisfy the Stringer interface.
 func (d Detect) String() string {
-	return fmt.Sprintf("Detect{ Application: %s, BuildPlan: %s, Logger: %s}", d.Application, d.BuildPlan, d.Logger)
+	return fmt.Sprintf("Detect{ Application: %s, Buildpack: %s, BuildPlan: %s, Logger: %s, Stack: %s }",
+		d.Application, d.Buildpack, d.BuildPlan, d.Logger, d.Stack)
 }
 
 func (d Detect) defaultLogger() Logger {

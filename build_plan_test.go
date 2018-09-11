@@ -37,11 +37,11 @@ func testBuildPlan(t *testing.T, when spec.G, it spec.S) {
 
 	expected := libbuildpack.BuildPlan{
 		"alpha": libbuildpack.BuildPlanDependency{
-			"version": "alpha-version",
-			"name":    "alpha-name",
+			Version:  "alpha-version",
+			Provider: "alpha-provider",
+			Metadata: libbuildpack.BuildPlanDependencyMetadata{"test-key": "test-value"},
 		},
 		"bravo": libbuildpack.BuildPlanDependency{
-			"name": "bravo-name",
 		},
 	}
 
@@ -51,10 +51,12 @@ func testBuildPlan(t *testing.T, when spec.G, it spec.S) {
 
 		console.In(t, `[alpha]
   version = "alpha-version"
-  name = "alpha-name"
+  provider = "alpha-provider"
+
+  [alpha.metadata]
+    test-key = "test-value"
 
 [bravo]
-  name = "bravo-name"
 `)
 
 		buildPlan, err := libbuildpack.DefaultBuildPlan(logger)
@@ -70,11 +72,13 @@ func testBuildPlan(t *testing.T, when spec.G, it spec.S) {
 	it("unmarshals from reader", func() {
 		in := strings.NewReader(`[alpha]
   version = "alpha-version"
-  name = "alpha-name"
+  provider = "alpha-provider"
+
+  [alpha.metadata]
+    test-key = "test-value"
 
 [bravo]
-  name = "bravo-name"
-  `)
+`)
 
 		buildPlan, err := libbuildpack.NewBuildPlan(in, logger)
 		if err != nil {
@@ -100,31 +104,9 @@ func testBuildPlan(t *testing.T, when spec.G, it spec.S) {
 	it("returns nil if a named dependency does not exist", func() {
 		p := libbuildpack.BuildPlan{}
 
-		actual := p["test-dependency"]
-		if actual != nil {
+		actual, ok := p["test-dependency"]
+		if ok {
 			t.Errorf("BuildPlan[\"test-dependency\"] = %s, expected nil", actual)
-		}
-	})
-
-	it("returns the dependency version", func() {
-		d := libbuildpack.BuildPlanDependency{"version": "1.*"}
-
-		actual, err := d.Version()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if actual != "1.*" {
-			t.Errorf("BuildPlanDependency.Version = %s, expected 1.*", actual)
-		}
-	})
-
-	it("returns error if dependency version does not exist", func() {
-		d := libbuildpack.BuildPlanDependency{}
-
-		_, err := d.Version()
-		if err == nil {
-			t.Errorf("BuildPlanDependency.Version = nil, expected not nil")
 		}
 	})
 

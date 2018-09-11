@@ -34,8 +34,8 @@ func testStack(t *testing.T, when spec.G, it spec.S) {
 
 	logger := libbuildpack.NewLogger(nil, nil)
 
-	it("extracts value from PACK_STACK_NAME", func() {
-		defer internal.ReplaceEnv(t, "PACK_STACK_NAME", "test-stack-name")()
+	it("extracts value from PACK_STACK_ID", func() {
+		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack-name")()
 
 		actual, err := libbuildpack.DefaultStack(logger)
 		if err != nil {
@@ -47,14 +47,14 @@ func testStack(t *testing.T, when spec.G, it spec.S) {
 		}
 	})
 
-	it("returns error when PACK_STACK_NAME not set", func() {
-		defer internal.ProtectEnv(t, "PACK_STACK_NAME")()
+	it("returns error when PACK_STACK_ID not set", func() {
+		defer internal.ProtectEnv(t, "PACK_STACK_ID")()
 
-		os.Unsetenv("PACK_STACK_NAME")
+		os.Unsetenv("PACK_STACK_ID")
 
 		_, err := libbuildpack.DefaultStack(logger)
-		if err.Error() != "PACK_STACK_NAME not set" {
-			t.Errorf("DefaultStack = %s, expected PACK_STACK_NAME not set", err.Error())
+		if err.Error() != "PACK_STACK_ID not set" {
+			t.Errorf("DefaultStack = %s, expected PACK_STACK_ID not set", err.Error())
 		}
 	})
 }

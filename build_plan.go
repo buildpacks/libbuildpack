@@ -40,28 +40,25 @@ func (p BuildPlan) String() string {
 }
 
 // BuildPlanDependency represents a dependency in a build.
-type BuildPlanDependency map[string]interface{}
+type BuildPlanDependency struct {
+	// Provider is the optional ID of the buildpack that will provide the dependency.
+	Provider string `toml:"provider"`
+
+	// Version is the optional dependency version.
+	Version string `toml:"version"`
+
+	// Metadata is additional metadata attached to the dependency.
+	Metadata BuildPlanDependencyMetadata `toml:"metadata"`
+}
 
 // String makes BuildPlanDependency satisfy the Stringer interface.
 func (d BuildPlanDependency) String() string {
-	var entries []string
-
-	for k, v := range d {
-		entries = append(entries, fmt.Sprintf("%s: %v", k, v))
-	}
-
-	return fmt.Sprintf("BuildPlanDependency{ %s }", strings.Join(entries, ", "))
+	return fmt.Sprintf("BuildPlanDependency{ Provider: %s, Version: %s, Metadata: %s }",
+		d.Provider, d.Version, d.Metadata)
 }
 
-// Version returns the version of this dependency.  Returns an error if the version is missing or invalid.
-func (d BuildPlanDependency) Version() (string, error) {
-	v, ok := d["version"].(string)
-	if !ok {
-		return "", fmt.Errorf("version key does not exist")
-	}
-
-	return v, nil
-}
+// BuildPlanDependencyMetadata is additional metadata attached to a dependency.
+type BuildPlanDependencyMetadata map[string]interface{}
 
 // DefaultBuildPlan creates a new instance of BuildPlan, extracting the contents from stdin.
 func DefaultBuildPlan(logger Logger) (BuildPlan, error) {

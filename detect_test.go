@@ -37,7 +37,7 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 	it("contains default values", func() {
 		root := internal.ScratchDir(t, "detect")
 		defer internal.ReplaceWorkingDirectory(t, root)()
-		defer internal.ReplaceEnv(t, "PACK_STACK_NAME", "test-stack")()
+		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
 
 		console, d := internal.ReplaceConsole(t)
 		defer d()
@@ -100,7 +100,7 @@ test-key = "test-value"
 	it("suppresses debug output", func() {
 		root := internal.ScratchDir(t, "detect")
 		defer internal.ReplaceWorkingDirectory(t, root)()
-		defer internal.ReplaceEnv(t, "PACK_STACK_NAME", "test-stack")()
+		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
 
 		c, d := internal.ReplaceConsole(t)
 		defer d()
@@ -139,7 +139,7 @@ test-key = "test-value"
 	it("allows debug output if BP_DEBUG is set", func() {
 		root := internal.ScratchDir(t, "detect")
 		defer internal.ReplaceWorkingDirectory(t, root)()
-		defer internal.ReplaceEnv(t, "PACK_STACK_NAME", "test-stack")()
+		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
 
 		c, d := internal.ReplaceConsole(t)
 		defer d()
