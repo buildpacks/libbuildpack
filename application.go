@@ -30,7 +30,7 @@ type Application struct {
 
 // String makes Application satisfy the Stringer interface.
 func (a Application) String() string {
-	return fmt.Sprintf("Application{ root: %s }", a.Root)
+	return fmt.Sprintf("Application{ Root: %s }", a.Root)
 }
 
 func (a Application) applicationContents() []string {

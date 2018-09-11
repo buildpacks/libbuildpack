@@ -82,6 +82,18 @@ func (c console) Out(t *testing.T) string {
 	return string(bytes)
 }
 
+// ProtectEnv protects an environment variable (os.Getenv()).  Returns a function for use with defer in order to reset
+// the previous value.
+//
+// defer ProtectEnv(t, "alpha")()
+func ProtectEnv(t *testing.T, key string) func() {
+	t.Helper()
+
+	previous := os.Getenv(key)
+
+	return func() { os.Setenv(key, previous) }
+}
+
 // ReplaceConsole replaces the console files (os.Stderr, os.Stdin, os.Stdout).  Returns a function for use with defer in
 // order to reset the previous values
 //
@@ -119,6 +131,19 @@ func ReplaceConsole(t *testing.T) (console, func()) {
 		os.Stdin = inPrevious
 		os.Stdout = outPrevious
 	}
+}
+
+// ReplaceEnv replaces an environment variable (os.Getenv()).  Returns a function for use with defer in order to reset
+// the previous value.
+//
+// defer ReplaceEnv(t, "alpha", "bravo")()
+func ReplaceEnv(t *testing.T, key string, value string) func() {
+	t.Helper()
+
+	previous := os.Getenv(key)
+	os.Setenv(key, value)
+
+	return func() { os.Setenv(key, previous) }
 }
 
 // ReplaceWorkingDirectory replaces the current working directory (os.Getwd()) with a new value.  Returns a function for
