@@ -22,7 +22,7 @@ import (
 	"strings"
 )
 
-// Cache represents cached layers for an application.
+// Cache represents cache layers for an application.
 type Cache struct {
 	// Root is the path to the root directory for the caches.
 	Root string
@@ -79,9 +79,9 @@ func (c CacheLayer) addEnvFile(file string, format string, args ...interface{}) 
 	return writeToFile(strings.NewReader(v), f, 0644)
 }
 
-// DefaultCache creates a new instance of Cache, extracting the Root path from os.Args[1].
+// DefaultCache creates a new instance of Cache, extracting the Root path from os.Args[2].
 func DefaultCache(logger Logger) (Cache, error) {
-	root, err := osArgs(1)
+	root, err := osArgs(2)
 	if err != nil {
 		return Cache{}, err
 	}

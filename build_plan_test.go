@@ -33,7 +33,7 @@ func TestBuildPlan(t *testing.T) {
 
 func testBuildPlan(t *testing.T, when spec.G, it spec.S) {
 
-	logger := libbuildpack.NewLogger(nil, nil)
+	logger := libbuildpack.Logger{}
 
 	expected := libbuildpack.BuildPlan{
 		"alpha": libbuildpack.BuildPlanDependency{

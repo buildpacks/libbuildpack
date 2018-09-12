@@ -17,7 +17,6 @@
 package libbuildpack_test
 
 import (
-	"io/ioutil"
 	"path/filepath"
 	"testing"
 
@@ -33,10 +32,10 @@ func TestCache(t *testing.T) {
 
 func testCache(t *testing.T, when spec.G, it spec.S) {
 
-	logger := libbuildpack.NewLogger(nil, nil)
+	logger := libbuildpack.Logger{}
 
-	it("extracts roots from os.Args[1]", func() {
-		defer internal.ReplaceArgs(t, "", "cache-root")()
+	it("extracts root from os.Args[2]", func() {
+		defer internal.ReplaceArgs(t, "", "", "cache-root")()
 
 		cache, err := libbuildpack.DefaultCache(logger)
 		if err != nil {
@@ -65,24 +64,7 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 			t.Fatal(err)
 		}
 
-		f := filepath.Join(root, "env", "TEST_NAME.append")
-		exists, err := internal.FileExists(f)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if !exists {
-			t.Errorf("Expected %s to exist, did not", f)
-		}
-
-		content, err := ioutil.ReadFile(f)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if string(content) != "test-string-1" {
-			t.Errorf("%s = %s, expected test-string-1", f, string(content))
-		}
+		internal.BeFileLike(t, filepath.Join(root, "env", "TEST_NAME.append"), 0644, "test-string-1")
 	})
 
 	it("writes an append path environment file", func() {
@@ -93,24 +75,7 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 			t.Fatal(err)
 		}
 
-		f := filepath.Join(root, "env", "TEST_NAME")
-		exists, err := internal.FileExists(f)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if !exists {
-			t.Errorf("Expected %s to exist, did not", f)
-		}
-
-		content, err := ioutil.ReadFile(f)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if string(content) != "test-string-1" {
-			t.Errorf("%s = %s, expected test-string-1", f, string(content))
-		}
+		internal.BeFileLike(t, filepath.Join(root, "env", "TEST_NAME"), 0644, "test-string-1")
 	})
 
 	it("writes an override environment file", func() {
@@ -121,23 +86,6 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 			t.Fatal(err)
 		}
 
-		f := filepath.Join(root, "env", "TEST_NAME.override")
-		exists, err := internal.FileExists(f)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if !exists {
-			t.Errorf("Expected %s to exist, did not", f)
-		}
-
-		content, err := ioutil.ReadFile(f)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if string(content) != "test-string-1" {
-			t.Errorf("%s = %s, expected test-string-1", f, string(content))
-		}
+		internal.BeFileLike(t, filepath.Join(root, "env", "TEST_NAME.override"), 0644, "test-string-1")
 	})
 }

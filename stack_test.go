@@ -32,7 +32,7 @@ func TestStack(t *testing.T) {
 
 func testStack(t *testing.T, when spec.G, it spec.S) {
 
-	logger := libbuildpack.NewLogger(nil, nil)
+	logger := libbuildpack.Logger{}
 
 	it("extracts value from PACK_STACK_ID", func() {
 		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack-name")()

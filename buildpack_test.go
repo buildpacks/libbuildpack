@@ -34,7 +34,7 @@ func TestBuildpack(t *testing.T) {
 
 func testBuildpack(t *testing.T, when spec.G, it spec.S) {
 
-	logger := libbuildpack.NewLogger(nil, nil)
+	logger := libbuildpack.Logger{}
 
 	expected := libbuildpack.Buildpack{
 		Info: libbuildpack.BuildpackInfo{
