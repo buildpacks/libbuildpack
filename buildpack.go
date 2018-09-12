@@ -117,10 +117,16 @@ func NewBuildpack(in io.Reader, logger Logger) (Buildpack, error) {
 }
 
 func findBuildpackToml() (string, error) {
-	dir, err := filepath.Abs(path.Dir(os.Args[0]))
+	exec, err := osArgs(0)
 	if err != nil {
 		return "", err
 	}
+
+	dir, err := filepath.Abs(path.Dir(exec))
+	if err != nil {
+		return "", err
+	}
+
 	for {
 		if dir == "/" {
 			return "", fmt.Errorf("could not find buildpack.toml in the directory hierarchy")

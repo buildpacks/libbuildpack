@@ -83,6 +83,20 @@ func (c console) Out(t *testing.T) string {
 	return string(bytes)
 }
 
+// FileExists returns true if a file exists, otherwise false.
+func FileExists(file string) (bool, error) {
+	_, err := os.Stat(file)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
+}
+
 // ProtectEnv protects an environment variable (os.Getenv()).  Returns a function for use with defer in order to reset
 // the previous value.
 //

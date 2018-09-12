@@ -18,7 +18,10 @@ package libbuildpack
 
 import (
 	"bytes"
+	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/BurntSushi/toml"
 )
@@ -36,6 +39,14 @@ func fileExists(file string) (bool, error) {
 	return true, nil
 }
 
+func osArgs(index int) (string, error) {
+	if len(os.Args) < index+1 {
+		return "", fmt.Errorf("incorrect number of command line arguments")
+	}
+
+	return os.Args[index], nil
+}
+
 func toTomlString(v interface{}) (string, error) {
 	var b bytes.Buffer
 
@@ -44,4 +55,24 @@ func toTomlString(v interface{}) (string, error) {
 	}
 
 	return b.String(), nil
+}
+
+func writeToFile(source io.Reader, destFile string, mode os.FileMode) error {
+	err := os.MkdirAll(filepath.Dir(destFile), 0755)
+	if err != nil {
+		return err
+	}
+
+	fh, err := os.OpenFile(destFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
+	if err != nil {
+		return err
+	}
+	defer fh.Close()
+
+	_, err = io.Copy(fh, source)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
