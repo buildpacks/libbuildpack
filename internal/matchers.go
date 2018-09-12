@@ -67,6 +67,6 @@ func fileContentMatches(t *testing.T, file string, content string) {
 
 	actual := string(b)
 	if actual != content {
-		t.Errorf("File content = %s, wanted %s", actual, content)
+		t.Errorf("File content = %s, wanted = %s", actual, content)
 	}
 }
