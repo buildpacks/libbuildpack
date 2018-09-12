@@ -19,7 +19,6 @@ package libbuildpack
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 )
 
 // Application represents the application being processed by buildpacks.
@@ -31,17 +30,6 @@ type Application struct {
 // String makes Application satisfy the Stringer interface.
 func (a Application) String() string {
 	return fmt.Sprintf("Application{ Root: %s }", a.Root)
-}
-
-func (a Application) applicationContents() []string {
-	var contents []string
-
-	filepath.Walk(a.Root, func(path string, info os.FileInfo, err error) error {
-		contents = append(contents, path)
-		return nil
-	})
-
-	return contents
 }
 
 // DefaultApplication creates a new instance of Application, extracting the Root path from the working directory.
@@ -59,7 +47,7 @@ func NewApplication(root string, logger Logger) Application {
 	a := Application{root}
 
 	if logger.IsDebugEnabled() {
-		logger.Debug("Application contents: %s", a.applicationContents())
+		logger.Debug("Application contents: %s", directoryContents(root))
 	}
 
 	return a

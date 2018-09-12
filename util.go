@@ -26,6 +26,17 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+func directoryContents(root string) []string {
+	var contents []string
+
+	filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		contents = append(contents, path)
+		return nil
+	})
+
+	return contents
+}
+
 func fileExists(file string) (bool, error) {
 	_, err := os.Stat(file)
 	if err != nil {

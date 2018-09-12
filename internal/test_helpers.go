@@ -101,12 +101,19 @@ func FileExists(file string) (bool, error) {
 // the previous value.
 //
 // defer ProtectEnv(t, "alpha")()
-func ProtectEnv(t *testing.T, key string) func() {
+func ProtectEnv(t *testing.T, keys ...string) func() {
 	t.Helper()
 
-	previous := os.Getenv(key)
+	previous := make(map[string]string)
+	for _, key := range keys {
+		previous[key] = os.Getenv(key)
+	}
 
-	return func() { os.Setenv(key, previous) }
+	return func() {
+		for k, v := range previous {
+			os.Setenv(k, v)
+		}
+	}
 }
 
 // ReplaceArgs replaces the current command line arguments (os.Args) with a new collection of values.  Returns a
