@@ -20,10 +20,31 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/bouk/monkey"
 )
+
+// CaptureExitStatus returns a pointer to the exit status code when os.Exit() is called.  Returns a function for use
+// with defer in order to clean up after capture.
+//
+// c, d := CaptureExitStatus(t)
+// defer d()
+func CaptureExitStatus(t *testing.T) (*int, func()) {
+	t.Helper()
+
+	code := math.MinInt64
+	pg := monkey.Patch(os.Exit, func(c int) {
+		code = c
+	})
+
+	return &code, func() {
+		pg.Unpatch()
+	}
+}
 
 // Console represents the standard console objects, stdin, stdout, and stderr.
 type Console struct {

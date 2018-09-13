@@ -175,4 +175,110 @@ test-key = "test-value"
 			t.Errorf("stdout was not empty, expected empty")
 		}
 	})
+
+	it("returns code when erroring", func() {
+		root := internal.ScratchDir(t, "detect")
+		defer internal.ReplaceWorkingDirectory(t, root)()
+		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+
+		c, d := internal.ReplaceConsole(t)
+		defer d()
+		c.In(t, "")
+
+		err := internal.WriteToFile(strings.NewReader(""), filepath.Join(root, "buildpack.toml"), 0644)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"))()
+
+		detect, err := libbuildpack.DefaultDetect()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		expected, d := internal.CaptureExitStatus(t)
+		defer d()
+
+		detect.Error(42)
+
+		if *expected != 42 {
+			t.Errorf("os.Exit = %d, expected 42", *expected)
+		}
+	})
+
+	it("returns 100 when failing", func() {
+		root := internal.ScratchDir(t, "detect")
+		defer internal.ReplaceWorkingDirectory(t, root)()
+		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+
+		c, d := internal.ReplaceConsole(t)
+		defer d()
+		c.In(t, "")
+
+		err := internal.WriteToFile(strings.NewReader(""), filepath.Join(root, "buildpack.toml"), 0644)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"))()
+
+		detect, err := libbuildpack.DefaultDetect()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		expected, d := internal.CaptureExitStatus(t)
+		defer d()
+
+		detect.Fail()
+
+		if *expected != 100 {
+			t.Errorf("os.Exit = %d, expected 100", *expected)
+		}
+	})
+
+	it("returns 0 and BuildPlan when passing", func() {
+
+		root := internal.ScratchDir(t, "detect")
+		defer internal.ReplaceWorkingDirectory(t, root)()
+		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+
+		c, d := internal.ReplaceConsole(t)
+		defer d()
+		c.In(t, "")
+
+		err := internal.WriteToFile(strings.NewReader(""), filepath.Join(root, "buildpack.toml"), 0644)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"))()
+
+		detect, err := libbuildpack.DefaultDetect()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		expected, d := internal.CaptureExitStatus(t)
+		defer d()
+
+		detect.Pass(libbuildpack.BuildPlan{
+			"alpha": libbuildpack.BuildPlanDependency{Provider: "test-provider", Version: "test-version"},
+		})
+
+		if *expected != 0 {
+			t.Errorf("os.Exit = %d, expected 0", *expected)
+		}
+
+		stdout := c.Out(t)
+		expectedStdout := `[alpha]
+  provider = "test-provider"
+  version = "test-version"
+`
+
+		if stdout != expectedStdout {
+			t.Errorf("stdout = %s, expected %s", stdout, expectedStdout)
+		}
+	})
 }

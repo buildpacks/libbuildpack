@@ -112,5 +112,4 @@ test-key = "test-value"
 			t.Errorf("Buildpack = %s, wanted %s", buildpack, expected)
 		}
 	})
-
 }
