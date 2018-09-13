@@ -197,13 +197,13 @@ test-key = "test-value"
 			t.Fatal(err)
 		}
 
-		expected, d := internal.CaptureExitStatus(t)
+		actual, d := internal.CaptureExitStatus(t)
 		defer d()
 
 		build.Success()
 
-		if *expected != 0 {
-			t.Errorf("os.Exit = %d, expected 0", *expected)
+		if *actual != 0 {
+			t.Errorf("os.Exit = %d, expected 0", *actual)
 		}
 	})
 
@@ -228,13 +228,13 @@ test-key = "test-value"
 			t.Fatal(err)
 		}
 
-		expected, d := internal.CaptureExitStatus(t)
+		actual, d := internal.CaptureExitStatus(t)
 		defer d()
 
 		build.Failure(42)
 
-		if *expected != 42 {
-			t.Errorf("os.Exit = %d, expected 42", *expected)
+		if *actual != 42 {
+			t.Errorf("os.Exit = %d, expected 42", *actual)
 		}
 	})
 }
