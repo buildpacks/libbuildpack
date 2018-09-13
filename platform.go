@@ -32,11 +32,14 @@ type Platform struct {
 
 	// Envs is the collection of environment variables contributed by the platform.
 	Envs EnvironmentVariables
+
+	// Logger is used to write debug and info to the console.
+	Logger Logger
 }
 
 // String makes Platform satisfy the Stringer interface.
 func (p Platform) String() string {
-	return fmt.Sprintf("Platform{ Root :%s, Envs: %s }", p.Root, p.Envs)
+	return fmt.Sprintf("Platform{ Root: %s, Envs: %s, Logger: %s }", p.Root, p.Envs, p.Logger)
 }
 
 func (p Platform) enumerateEnvs(logger Logger) (EnvironmentVariables, error) {
@@ -114,7 +117,7 @@ func DefaultPlatform(logger Logger) (Platform, error) {
 
 // NewPlatform creates a new instance of Platform, configuring the Root path.
 func NewPlatform(root string, logger Logger) (Platform, error) {
-	p := Platform{Root: root}
+	p := Platform{Root: root, Logger: logger}
 
 	if logger.IsDebugEnabled() {
 		logger.Debug("Platform contents: %s", internal.DirectoryContents(root))

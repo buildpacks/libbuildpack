@@ -30,18 +30,19 @@ type Launch struct {
 	// Root is the path to the root directory for the layers.
 	Root string
 
-	logger Logger
+	// Logger is used to write debug and info to the console.
+	Logger Logger
 }
 
 // Layer creates a LaunchLayer with a specified name.
 func (l Launch) Layer(name string) LaunchLayer {
 	metadata := filepath.Join(l.Root, fmt.Sprintf("%s.toml", name))
-	return LaunchLayer{filepath.Join(l.Root, name), l.logger, metadata}
+	return LaunchLayer{filepath.Join(l.Root, name), l.Logger, metadata}
 }
 
 // String makes Launch satisfy the Stringer interface.
 func (l Launch) String() string {
-	return fmt.Sprintf("Launch{ Root: %s, logger: %s }", l.Root, l.logger)
+	return fmt.Sprintf("Launch{ Root: %s, Logger: %s }", l.Root, l.Logger)
 }
 
 // WriteMetadata writes Launch metadata to the filesystem.
@@ -53,7 +54,7 @@ func (l Launch) WriteMetadata(metadata LaunchMetadata) error {
 
 	f := filepath.Join(l.Root, "launch.toml")
 
-	l.logger.Debug("Writing launch metadata: %s <= %s", f, m)
+	l.Logger.Debug("Writing launch metadata: %s <= %s", f, m)
 	return internal.WriteToFile(strings.NewReader(m), f, 0644)
 }
 
@@ -62,13 +63,15 @@ type LaunchLayer struct {
 	// Root is the path to the root directory for the launch layer.
 	Root string
 
-	logger   Logger
+	// Logger is used to write debug and info to the console.
+	Logger Logger
+
 	metadata string
 }
 
 // String makes LaunchLayer satisfy the Stringer interface.
 func (l LaunchLayer) String() string {
-	return fmt.Sprintf("LaunchLayer{ Root: %s, logger: %s }", l.Root, l.logger)
+	return fmt.Sprintf("LaunchLayer{ Root: %s, Logger: %s }", l.Root, l.Logger)
 }
 
 // ReadMetadata reads arbitrary launch layer metadata from the filesystem.
@@ -79,7 +82,7 @@ func (l LaunchLayer) ReadMetadata(v interface{}) error {
 	}
 
 	if !exists {
-		l.logger.Debug("Metadata %s does not exist", l.metadata)
+		l.Logger.Debug("Metadata %s does not exist", l.metadata)
 		return nil
 	}
 
@@ -88,7 +91,7 @@ func (l LaunchLayer) ReadMetadata(v interface{}) error {
 		return err
 	}
 
-	l.logger.Debug("Reading layer metadata: %s <= %v", l.metadata, v)
+	l.Logger.Debug("Reading layer metadata: %s <= %v", l.metadata, v)
 	return nil
 }
 
@@ -99,7 +102,7 @@ func (l LaunchLayer) WriteMetadata(metadata interface{}) error {
 		return err
 	}
 
-	l.logger.Debug("Writing layer metadata: %s <= %s", l.metadata, m)
+	l.Logger.Debug("Writing layer metadata: %s <= %s", l.metadata, m)
 	return internal.WriteToFile(strings.NewReader(m), l.metadata, 0644)
 }
 
@@ -108,7 +111,7 @@ func (l LaunchLayer) WriteProfile(file string, format string, args ...interface{
 	f := filepath.Join(l.Root, "profile.d", file)
 	v := fmt.Sprintf(format, args...)
 
-	l.logger.Debug("Writing profile: %s <= %s", f, v)
+	l.Logger.Debug("Writing profile: %s <= %s", f, v)
 
 	return internal.WriteToFile(strings.NewReader(v), f, 0644)
 }
