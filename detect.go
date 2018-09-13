@@ -47,7 +47,7 @@ func (d Detect) Error(code int) {
 	os.Exit(code)
 }
 
-// Fail signals an unsuccessful detection by existing with a 100 status code.  This should be the final function called
+// Fail signals an unsuccessful detection by exiting with a 100 status code.  This should be the final function called
 // in detection.
 func (d Detect) Fail() {
 	d.Logger.Debug("Detection failed. Exiting with %d.", 100)

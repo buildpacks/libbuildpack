@@ -25,7 +25,8 @@ import (
 	"testing"
 )
 
-type console struct {
+// Console represents the standard console objects, stdin, stdout, and stderr.
+type Console struct {
 	errRead  *os.File
 	errWrite *os.File
 	inRead   *os.File
@@ -35,7 +36,7 @@ type console struct {
 }
 
 // Err returns a string representation of captured stderr.
-func (c console) Err(t *testing.T) string {
+func (c Console) Err(t *testing.T) string {
 	t.Helper()
 
 	err := c.errWrite.Close()
@@ -52,7 +53,7 @@ func (c console) Err(t *testing.T) string {
 }
 
 // In writes a string and closes the connection once complete.
-func (c console) In(t *testing.T, string string) {
+func (c Console) In(t *testing.T, string string) {
 	t.Helper()
 
 	_, err := fmt.Fprint(c.inWrite, string)
@@ -67,7 +68,7 @@ func (c console) In(t *testing.T, string string) {
 }
 
 // Out returns a string representation of captured stdout.
-func (c console) Out(t *testing.T) string {
+func (c Console) Out(t *testing.T) string {
 	t.Helper()
 
 	err := c.outWrite.Close()
@@ -97,21 +98,31 @@ func FileExists(file string) (bool, error) {
 	return true, nil
 }
 
-// ProtectEnv protects an environment variable (os.Getenv()).  Returns a function for use with defer in order to reset
-// the previous value.
+// ProtectEnv protects a collection of environment variables.  Returns a function for use with defer in order to reset
+// the previous values.
 //
 // defer ProtectEnv(t, "alpha")()
 func ProtectEnv(t *testing.T, keys ...string) func() {
 	t.Helper()
 
-	previous := make(map[string]string)
+	type state struct {
+		value string
+		ok    bool
+	}
+
+	previous := make(map[string]state)
 	for _, key := range keys {
-		previous[key] = os.Getenv(key)
+		value, ok := os.LookupEnv(key)
+		previous[key] = state{value, ok}
 	}
 
 	return func() {
 		for k, v := range previous {
-			os.Setenv(k, v)
+			if v.ok {
+				os.Setenv(k, v.value)
+			} else {
+				os.Unsetenv(k)
+			}
 		}
 	}
 }
@@ -134,10 +145,10 @@ func ReplaceArgs(t *testing.T, args ...string) func() {
 //
 // c, d := ReplaceConsole(t)
 // defer d()
-func ReplaceConsole(t *testing.T) (console, func()) {
+func ReplaceConsole(t *testing.T) (Console, func()) {
 	t.Helper()
 
-	var console console
+	var console Console
 	var err error
 
 	errPrevious := os.Stderr
@@ -168,17 +179,23 @@ func ReplaceConsole(t *testing.T) (console, func()) {
 	}
 }
 
-// ReplaceEnv replaces an environment variable (os.Getenv()).  Returns a function for use with defer in order to reset
-// the previous value.
+// ReplaceEnv replaces an environment variable.  Returns a function for use with defer in order to reset the previous
+// value.
 //
 // defer ReplaceEnv(t, "alpha", "bravo")()
 func ReplaceEnv(t *testing.T, key string, value string) func() {
 	t.Helper()
 
-	previous := os.Getenv(key)
+	previous, ok := os.LookupEnv(key)
 	os.Setenv(key, value)
 
-	return func() { os.Setenv(key, previous) }
+	return func() {
+		if ok {
+			os.Setenv(key, previous)
+		} else {
+			os.Unsetenv(key)
+		}
+	}
 }
 
 // ReplaceWorkingDirectory replaces the current working directory (os.Getwd()) with a new value.  Returns a function for

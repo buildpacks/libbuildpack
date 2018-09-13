@@ -28,11 +28,11 @@ import (
 	"github.com/sclevine/spec/report"
 )
 
-func TestDetect(t *testing.T) {
-	spec.Run(t, "Detect", testDetect, spec.Report(report.Terminal{}))
+func TestBuild(t *testing.T) {
+	spec.Run(t, "Build", testBuild, spec.Report(report.Terminal{}))
 }
 
-func testDetect(t *testing.T, when spec.G, it spec.S) {
+func testBuild(t *testing.T, when spec.G, it spec.S) {
 
 	it("contains default values", func() {
 		root := internal.ScratchDir(t, "detect")
@@ -69,36 +69,48 @@ test-key = "test-value"
 			t.Fatal(err)
 		}
 
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"))()
+		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), root, root, root)()
 
-		detect, err := libbuildpack.DefaultDetect()
+		build, err := libbuildpack.DefaultBuild()
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if reflect.DeepEqual(detect.Application, libbuildpack.Application{}) {
+		if reflect.DeepEqual(build.Application, libbuildpack.Application{}) {
 			t.Errorf("detect.Application should not be empty")
 		}
 
-		if reflect.DeepEqual(detect.Buildpack, libbuildpack.Buildpack{}) {
+		if reflect.DeepEqual(build.Buildpack, libbuildpack.Buildpack{}) {
 			t.Errorf("detect.Buildpack should not be empty")
 		}
 
-		if reflect.DeepEqual(detect.BuildPlan, libbuildpack.BuildPlan{}) {
+		if reflect.DeepEqual(build.BuildPlan, libbuildpack.BuildPlan{}) {
 			t.Errorf("detect.BuildPlan should not be empty")
 		}
 
-		if reflect.DeepEqual(detect.Logger, libbuildpack.Logger{}) {
+		if reflect.DeepEqual(build.Cache, libbuildpack.Cache{}) {
+			t.Errorf("detect.Cache should not be empty")
+		}
+
+		if reflect.DeepEqual(build.Launch, libbuildpack.Launch{}) {
+			t.Errorf("detect.Launch should not be empty")
+		}
+
+		if reflect.DeepEqual(build.Logger, libbuildpack.Logger{}) {
 			t.Errorf("detect.Logger should not be empty")
 		}
 
-		if reflect.DeepEqual(detect.Stack, libbuildpack.Stack("")) {
+		if reflect.DeepEqual(build.Platform, libbuildpack.Platform{}) {
+			t.Errorf("detect.Platform should not be empty")
+		}
+
+		if reflect.DeepEqual(build.Stack, libbuildpack.Stack("")) {
 			t.Errorf("detect.Stack should not be empty")
 		}
 	})
 
 	it("suppresses debug output", func() {
-		root := internal.ScratchDir(t, "detect")
+		root := internal.ScratchDir(t, "build")
 		defer internal.ReplaceWorkingDirectory(t, root)()
 		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
 
@@ -111,33 +123,27 @@ test-key = "test-value"
 			t.Fatal(err)
 		}
 
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"))()
+		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), root, root, root)()
 
-		detect, err := libbuildpack.DefaultDetect()
+		build, err := libbuildpack.DefaultBuild()
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		detect.Logger.Debug("test-debug-output")
-		detect.Logger.Info("test-info-output")
+		build.Logger.Debug("test-debug-output")
+		build.Logger.Info("test-info-output")
 
-		stderr := c.Err(t)
-
-		if strings.Contains(stderr, "test-debug-output") {
+		if strings.Contains(c.Err(t), "test-debug-output") {
 			t.Errorf("stderr contained test-debug-output, expected not")
 		}
 
-		if !strings.Contains(stderr, "test-info-output") {
-			t.Errorf("stderr did not contain test-info-output, expected to")
-		}
-
-		if c.Out(t) != "" {
-			t.Errorf("stdout was not empty, expected empty")
+		if !strings.Contains(c.Out(t), "test-info-output") {
+			t.Errorf("stdout did not contain test-info-output, expected to")
 		}
 	})
 
 	it("allows debug output if BP_DEBUG is set", func() {
-		root := internal.ScratchDir(t, "detect")
+		root := internal.ScratchDir(t, "build")
 		defer internal.ReplaceWorkingDirectory(t, root)()
 		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
 
@@ -150,29 +156,23 @@ test-key = "test-value"
 			t.Fatal(err)
 		}
 
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"))()
+		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), root, root, root)()
 		defer internal.ReplaceEnv(t, "BP_DEBUG", "")()
 
-		detect, err := libbuildpack.DefaultDetect()
+		build, err := libbuildpack.DefaultBuild()
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		detect.Logger.Debug("test-debug-output")
-		detect.Logger.Info("test-info-output")
+		build.Logger.Debug("test-debug-output")
+		build.Logger.Info("test-info-output")
 
-		stderr := c.Err(t)
-
-		if !strings.Contains(stderr, "test-debug-output") {
+		if !strings.Contains(c.Err(t), "test-debug-output") {
 			t.Errorf("stderr did not contain test-debug-output, expected to")
 		}
 
-		if !strings.Contains(stderr, "test-info-output") {
-			t.Errorf("stderr did not contain test-info-output, expected to")
-		}
-
-		if c.Out(t) != "" {
-			t.Errorf("stdout was not empty, expected empty")
+		if !strings.Contains(c.Out(t), "test-info-output") {
+			t.Errorf("stdout did not contain test-info-output, expected to")
 		}
 	})
 }
