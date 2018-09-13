@@ -111,7 +111,13 @@ func testPlatform(t *testing.T, when spec.G, it spec.S) {
 			t.Fatal(err)
 		}
 
-		platform.Envs[0].Set()
+		for _, e := range platform.Envs {
+			if e.Name == "TEST_KEY" {
+				if err := e.Set() ; err != nil {
+					t.Fatal(e)
+				}
+			}
+		}
 
 		if os.Getenv("TEST_KEY") != "test-value" {
 			t.Errorf("os.GetEnv(\"TEST_KEY\") = %s, expected test-value", os.Getenv("TEST_KEY"))
