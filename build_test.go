@@ -104,7 +104,7 @@ test-key = "test-value"
 			t.Errorf("detect.Platform should not be empty")
 		}
 
-		if reflect.DeepEqual(build.Stack, libbuildpack.Stack("")) {
+		if reflect.DeepEqual(build.Stack, "") {
 			t.Errorf("detect.Stack should not be empty")
 		}
 	})

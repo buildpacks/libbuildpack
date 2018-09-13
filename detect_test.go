@@ -92,7 +92,7 @@ test-key = "test-value"
 			t.Errorf("detect.Logger should not be empty")
 		}
 
-		if reflect.DeepEqual(detect.Stack, libbuildpack.Stack("")) {
+		if reflect.DeepEqual(detect.Stack, "") {
 			t.Errorf("detect.Stack should not be empty")
 		}
 	})

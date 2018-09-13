@@ -37,7 +37,7 @@ type Detect struct {
 	Logger Logger
 
 	// Stack is the stack currently available to the application.
-	Stack Stack
+	Stack string
 }
 
 // Error signals an error during detection by exiting with a specified non-zero, non-100 status code.  This should the

@@ -46,7 +46,7 @@ type Build struct {
 	Platform Platform
 
 	// Stack is the stack currently available to the application.
-	Stack Stack
+	Stack string
 }
 
 // Failure signals an unsuccessful build by exiting with a specified positive status code.  This should be the final
