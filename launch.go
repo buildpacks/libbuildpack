@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/buildpack/libbuildpack/internal"
 )
 
 // Launch represents launch layers for an application.
@@ -45,7 +46,7 @@ func (l Launch) String() string {
 
 // WriteMetadata writes Launch metadata to the filesystem.
 func (l Launch) WriteMetadata(metadata LaunchMetadata) error {
-	m, err := toTomlString(metadata)
+	m, err := internal.ToTomlString(metadata)
 	if err != nil {
 		return err
 	}
@@ -53,7 +54,7 @@ func (l Launch) WriteMetadata(metadata LaunchMetadata) error {
 	f := filepath.Join(l.Root, "launch.toml")
 
 	l.logger.Debug("Writing launch metadata: %s <= %s", f, m)
-	return writeToFile(strings.NewReader(m), f, 0644)
+	return internal.WriteToFile(strings.NewReader(m), f, 0644)
 }
 
 // LaunchLayer represents a launch layer for an application.
@@ -72,7 +73,7 @@ func (l LaunchLayer) String() string {
 
 // ReadMetadata reads arbitrary launch layer metadata from the filesystem.
 func (l LaunchLayer) ReadMetadata(v interface{}) error {
-	exists, err := fileExists(l.metadata)
+	exists, err := internal.FileExists(l.metadata)
 	if err != nil {
 		return err
 	}
@@ -93,13 +94,13 @@ func (l LaunchLayer) ReadMetadata(v interface{}) error {
 
 // WriteMetadata writes arbitrary launch layer metadata to the filesystem.
 func (l LaunchLayer) WriteMetadata(metadata interface{}) error {
-	m, err := toTomlString(metadata)
+	m, err := internal.ToTomlString(metadata)
 	if err != nil {
 		return err
 	}
 
 	l.logger.Debug("Writing layer metadata: %s <= %s", l.metadata, m)
-	return writeToFile(strings.NewReader(m), l.metadata, 0644)
+	return internal.WriteToFile(strings.NewReader(m), l.metadata, 0644)
 }
 
 // WriteProfile writes a file to profile.d with this value.
@@ -109,7 +110,7 @@ func (l LaunchLayer) WriteProfile(file string, format string, args ...interface{
 
 	l.logger.Debug("Writing profile: %s <= %s", f, v)
 
-	return writeToFile(strings.NewReader(v), f, 0644)
+	return internal.WriteToFile(strings.NewReader(v), f, 0644)
 }
 
 // LaunchMetadata represents metadata about the Launch.
@@ -142,7 +143,7 @@ func (p Process) String() string {
 
 // DefaultLaunch creates a new instance of Launch, extracting the Root path from os.Args[3].
 func DefaultLaunch(logger Logger) (Launch, error) {
-	root, err := osArgs(3)
+	root, err := internal.OsArgs(3)
 	if err != nil {
 		return Launch{}, err
 	}

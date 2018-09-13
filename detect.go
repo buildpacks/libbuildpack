@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/buildpack/libbuildpack/internal"
 )
 
 // Detect represents all of the components available to a buildpack at detect time.
@@ -59,7 +61,7 @@ func (d Detect) Fail() {
 func (d Detect) Pass(buildPlan BuildPlan) {
 	d.Logger.Debug("Detection passed. Exiting with %d.", 0)
 
-	s, err := toTomlString(buildPlan)
+	s, err := internal.ToTomlString(buildPlan)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(102)

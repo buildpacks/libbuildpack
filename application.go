@@ -19,6 +19,8 @@ package libbuildpack
 import (
 	"fmt"
 	"os"
+
+	"github.com/buildpack/libbuildpack/internal"
 )
 
 // Application represents the application being processed by buildpacks.
@@ -47,7 +49,7 @@ func NewApplication(root string, logger Logger) Application {
 	a := Application{root}
 
 	if logger.IsDebugEnabled() {
-		logger.Debug("Application contents: %s", directoryContents(root))
+		logger.Debug("Application contents: %s", internal.DirectoryContents(root))
 	}
 
 	return a

@@ -21,6 +21,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/buildpack/libbuildpack/internal"
 )
 
 // Platform represents the platform contributions for an application.
@@ -102,7 +104,7 @@ func (e EnvironmentVariable) value() (string, error) {
 
 // DefaultPlatform creates a new instance of Platform, extracting the Root path from os.Args[1].
 func DefaultPlatform(logger Logger) (Platform, error) {
-	root, err := osArgs(1)
+	root, err := internal.OsArgs(1)
 	if err != nil {
 		return Platform{}, err
 	}
@@ -115,7 +117,7 @@ func NewPlatform(root string, logger Logger) (Platform, error) {
 	p := Platform{Root: root}
 
 	if logger.IsDebugEnabled() {
-		logger.Debug("Platform contents: %s", directoryContents(root))
+		logger.Debug("Platform contents: %s", internal.DirectoryContents(root))
 	}
 
 	envs, err := p.enumerateEnvs(logger)

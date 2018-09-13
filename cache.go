@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+
+	"github.com/buildpack/libbuildpack/internal"
 )
 
 // Cache represents cache layers for an application.
@@ -76,12 +78,12 @@ func (c CacheLayer) addEnvFile(file string, format string, args ...interface{}) 
 
 	c.logger.Debug("Writing environment variable: %s <= %s", f, v)
 
-	return writeToFile(strings.NewReader(v), f, 0644)
+	return internal.WriteToFile(strings.NewReader(v), f, 0644)
 }
 
 // DefaultCache creates a new instance of Cache, extracting the Root path from os.Args[2].
 func DefaultCache(logger Logger) (Cache, error) {
-	root, err := osArgs(2)
+	root, err := internal.OsArgs(2)
 	if err != nil {
 		return Cache{}, err
 	}

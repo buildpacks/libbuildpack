@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
+	"github.com/buildpack/libbuildpack/internal"
 )
 
 // Buildpack represents the metadata associated with a buildpack.
@@ -117,7 +118,7 @@ func NewBuildpack(in io.Reader, logger Logger) (Buildpack, error) {
 }
 
 func findBuildpackToml() (string, error) {
-	exec, err := osArgs(0)
+	exec, err := internal.OsArgs(0)
 	if err != nil {
 		return "", err
 	}
@@ -133,7 +134,7 @@ func findBuildpackToml() (string, error) {
 		}
 
 		f := filepath.Join(dir, "buildpack.toml")
-		if exist, err := fileExists(f); err != nil {
+		if exist, err := internal.FileExists(f); err != nil {
 			return "", err
 		} else if exist {
 			return f, nil
