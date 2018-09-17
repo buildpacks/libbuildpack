@@ -91,7 +91,7 @@ func (l LaunchLayer) ReadMetadata(v interface{}) error {
 		return err
 	}
 
-	l.Logger.Debug("Reading layer metadata: %s <= %v", l.metadata, v)
+	l.Logger.Debug("Reading layer metadata: %s => %v", l.metadata, v)
 	return nil
 }
 
