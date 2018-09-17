@@ -53,6 +53,7 @@ type Build struct {
 // function called in building.
 func (b Build) Failure(code int) {
 	b.Logger.Debug("Build failed. Exiting with %d.", code)
+	b.Logger.Info("")
 	os.Exit(code)
 }
 
@@ -66,6 +67,7 @@ func (b Build) String() string {
 // building.
 func (b Build) Success() {
 	b.Logger.Debug("Build success. Exiting with %d.", 0)
+	b.Logger.Info("")
 	os.Exit(0)
 }
 
