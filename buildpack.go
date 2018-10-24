@@ -40,12 +40,15 @@ type Buildpack struct {
 
 	// Logger is used to write debug and info to the console.
 	Logger Logger
+
+	// Root is the path to the root directory for the buildpack.
+	Root string
 }
 
 // String makes Buildpack satisfy the Stringer interface.
 func (b Buildpack) String() string {
-	return fmt.Sprintf("Buildpack{ Info: %s, Stacks: %s, Metadata: %s, Logger: %s }",
-		b.Info, b.Stacks, b.Metadata, b.Logger)
+	return fmt.Sprintf("Buildpack{ Info: %s, Stacks: %s, Metadata: %s, Logger: %s, Root: %s }",
+		b.Info, b.Stacks, b.Metadata, b.Logger, b.Root)
 }
 
 // BuildpackInfo is information about the buildpack.
@@ -105,13 +108,13 @@ func DefaultBuildpack(logger Logger) (Buildpack, error) {
 	}
 	defer in.Close()
 
-	return NewBuildpack(in, logger)
+	return NewBuildpack(in, logger, filepath.Dir(f))
 }
 
 // NewBuildpack creates a new instance of Buildpack from a specified io.Reader.  Returns an error if the contents of
 // the reader are not valid TOML.
-func NewBuildpack(in io.Reader, logger Logger) (Buildpack, error) {
-	b := Buildpack{Logger: logger}
+func NewBuildpack(in io.Reader, logger Logger, root string) (Buildpack, error) {
+	b := Buildpack{Logger: logger, Root: root}
 
 	if _, err := toml.DecodeReader(in, &b); err != nil {
 		return Buildpack{}, err

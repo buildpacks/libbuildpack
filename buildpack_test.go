@@ -36,26 +36,27 @@ func testBuildpack(t *testing.T, when spec.G, it spec.S) {
 
 	logger := libbuildpack.Logger{}
 
-	expected := libbuildpack.Buildpack{
-		Info: libbuildpack.BuildpackInfo{
-			ID:      "buildpack-id",
-			Name:    "buildpack-name",
-			Version: "buildpack-version",
-		},
-		Stacks: []libbuildpack.BuildpackStack{
-			{
-				ID:          "stack-id",
-				BuildImages: []libbuildpack.BuildImages{"build-image-tag"},
-				RunImages:   []libbuildpack.RunImages{"run-image-tag"},
-			},
-		},
-		Metadata: libbuildpack.BuildpackMetadata{
-			"test-key": "test-value",
-		},
-	}
-
 	it("unmarshals default from buildpack.toml", func() {
 		root := internal.ScratchDir(t, "buildpack")
+
+		expected := libbuildpack.Buildpack{
+			Info: libbuildpack.BuildpackInfo{
+				ID:      "buildpack-id",
+				Name:    "buildpack-name",
+				Version: "buildpack-version",
+			},
+			Stacks: []libbuildpack.BuildpackStack{
+				{
+					ID:          "stack-id",
+					BuildImages: []libbuildpack.BuildImages{"build-image-tag"},
+					RunImages:   []libbuildpack.RunImages{"run-image-tag"},
+				},
+			},
+			Metadata: libbuildpack.BuildpackMetadata{
+				"test-key": "test-value",
+			},
+			Root: root,
+		}
 
 		in := strings.NewReader(`[buildpack]
 id = "buildpack-id"
@@ -89,6 +90,24 @@ test-key = "test-value"
 	})
 
 	it("unmarshals from reader", func() {
+		expected := libbuildpack.Buildpack{
+			Info: libbuildpack.BuildpackInfo{
+				ID:      "buildpack-id",
+				Name:    "buildpack-name",
+				Version: "buildpack-version",
+			},
+			Stacks: []libbuildpack.BuildpackStack{
+				{
+					ID:          "stack-id",
+					BuildImages: []libbuildpack.BuildImages{"build-image-tag"},
+					RunImages:   []libbuildpack.RunImages{"run-image-tag"},
+				},
+			},
+			Metadata: libbuildpack.BuildpackMetadata{
+				"test-key": "test-value",
+			},
+		}
+
 		in := strings.NewReader(`[buildpack]
 id = "buildpack-id"
 name = "buildpack-name"
@@ -103,7 +122,7 @@ run-images = ["run-image-tag"]
 test-key = "test-value"
 `)
 
-		buildpack, err := libbuildpack.NewBuildpack(in, logger)
+		buildpack, err := libbuildpack.NewBuildpack(in, logger, "")
 		if err != nil {
 			t.Fatal(err)
 		}
