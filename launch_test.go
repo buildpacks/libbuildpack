@@ -137,6 +137,30 @@ Bravo = 1
 		}
 	})
 
+	it("remove layer content metadata", func() {
+		root := internal.ScratchDir(t, "launch")
+		launch := libbuildpack.Launch{Root: root}
+		layer := launch.Layer("test-layer")
+
+		metadata := filepath.Join(root, "test-layer.toml")
+		internal.WriteToFile(strings.NewReader(`Alpha = "test-value"
+Bravo = 1
+`), metadata, 0644)
+
+		if err := layer.RemoveMetadata(); err != nil {
+			t.Fatal(err)
+		}
+
+		exists, err := internal.FileExists(metadata)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if exists {
+			t.Errorf("%s exists, expected not to", metadata)
+		}
+	})
+
 	it("writes layer content metadata", func() {
 		root := internal.ScratchDir(t, "launch")
 		launch := libbuildpack.Launch{Root: root}

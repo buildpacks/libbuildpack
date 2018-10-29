@@ -18,6 +18,7 @@ package libbuildpack
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -93,6 +94,21 @@ func (l LaunchLayer) ReadMetadata(v interface{}) error {
 
 	l.Logger.Debug("Reading layer metadata: %s => %v", l.metadata, v)
 	return nil
+}
+
+// RemoveMetadata remove launch layer metadata from the filesystem.
+func (l LaunchLayer) RemoveMetadata() error {
+	exists, err := internal.FileExists(l.metadata)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		l.Logger.Debug("Metadata %s does not exist", l.metadata)
+		return nil
+	}
+
+	return os.Remove(l.metadata)
 }
 
 // WriteMetadata writes arbitrary launch layer metadata to the filesystem.
