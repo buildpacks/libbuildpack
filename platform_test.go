@@ -77,6 +77,26 @@ func testPlatform(t *testing.T, when spec.G, it spec.S) {
 		}
 	})
 
+	it("reports environment variable containment", func() {
+		root := internal.ScratchDir(t, "platform")
+		internal.WriteToFile(strings.NewReader("test-value"), filepath.Join(root, "env", "TEST_KEY"), 0644)
+
+		platform, err := libbuildpack.NewPlatform(root, logger)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		contains := platform.Envs.Contains("TEST_KEY")
+		if !contains {
+			t.Errorf("Platform.Envs.Contains(\"TEST_KEY\") = %t, expected true", contains)
+		}
+
+		contains = platform.Envs.Contains("TEST_KEY_2")
+		if contains {
+			t.Errorf("Platform.Envs.Contains(\"TEST_KEY_2\") = %t, expected false", contains)
+		}
+	})
+
 	it("sets all platform environment variables", func() {
 		root := internal.ScratchDir(t, "platform")
 		internal.WriteToFile(strings.NewReader("test-value-1"), filepath.Join(root, "env", "TEST_KEY_1"), 0644)

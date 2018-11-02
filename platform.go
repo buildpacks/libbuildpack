@@ -60,6 +60,17 @@ func (p Platform) enumerateEnvs(logger Logger) (EnvironmentVariables, error) {
 // EnvironmentVariables is a collection of EnvironmentVariable instances.
 type EnvironmentVariables []EnvironmentVariable
 
+// Contains returns whether an EnvironmentVariables contains a given variable by name.
+func (e EnvironmentVariables) Contains(name string) bool {
+	for _, ev := range e {
+		if ev.Name == name {
+			return true
+		}
+	}
+
+	return false
+}
+
 // SetAll sets all of the environment variable content in the current process environment.
 func (e EnvironmentVariables) SetAll() error {
 	for _, ev := range e {
