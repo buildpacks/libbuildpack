@@ -14,5 +14,25 @@
  * limitations under the License.
  */
 
-// Package libbuildpack contains types and functions for implementing a Buildpack V3 compliant buildpack.
-package libbuildpack
+package buildpack
+
+import (
+	"fmt"
+)
+
+// Info is information about the buildpack.
+type Info struct {
+	// ID is the globally unique identifier of the buildpack.
+	ID string `toml:"id"`
+
+	// Name is the human readable name of the buildpack.
+	Name string `toml:"name"`
+
+	// Version is the semver-compliant version of the buildpack.
+	Version string `toml:"version"`
+}
+
+// String makes Info satisfy the Stringer interface.
+func (i Info) String() string {
+	return fmt.Sprintf("Info{ ID: %s, Name: %s, Version: %s }", i.ID, i.Name, i.Version)
+}

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package libbuildpack_test
+package buildpack_test
 
 import (
 	"path/filepath"
@@ -22,8 +22,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/buildpack/libbuildpack"
+	buildpackPkg "github.com/buildpack/libbuildpack/buildpack"
 	"github.com/buildpack/libbuildpack/internal"
+	"github.com/buildpack/libbuildpack/logger"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -34,97 +35,50 @@ func TestBuildpack(t *testing.T) {
 
 func testBuildpack(t *testing.T, when spec.G, it spec.S) {
 
-	logger := libbuildpack.Logger{}
-
 	it("unmarshals default from buildpack.toml", func() {
 		root := internal.ScratchDir(t, "buildpack")
+		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"))()
 
-		expected := libbuildpack.Buildpack{
-			Info: libbuildpack.BuildpackInfo{
+		in := strings.NewReader(`[buildpack]
+id = "buildpack-id"
+name = "buildpack-name"
+version = "buildpack-version"
+
+[[stacks]]
+id = 'stack-id'
+build-images = ["build-image-tag"]
+run-images = ["run-image-tag"]
+
+[metadata]
+test-key = "test-value"
+`)
+
+		if err := internal.WriteToFile(in, filepath.Join(root, "buildpack.toml"), 0644); err != nil {
+			t.Fatal(err)
+		}
+
+		buildpack, err := buildpackPkg.DefaultBuildpack(logger.Logger{})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		expected := buildpackPkg.Buildpack{
+			Info: buildpackPkg.Info{
 				ID:      "buildpack-id",
 				Name:    "buildpack-name",
 				Version: "buildpack-version",
 			},
-			Stacks: []libbuildpack.BuildpackStack{
+			Stacks: []buildpackPkg.Stack{
 				{
 					ID:          "stack-id",
-					BuildImages: []libbuildpack.BuildImages{"build-image-tag"},
-					RunImages:   []libbuildpack.RunImages{"run-image-tag"},
+					BuildImages: []buildpackPkg.BuildImages{"build-image-tag"},
+					RunImages:   []buildpackPkg.RunImages{"run-image-tag"},
 				},
 			},
-			Metadata: libbuildpack.BuildpackMetadata{
+			Metadata: buildpackPkg.Metadata{
 				"test-key": "test-value",
 			},
 			Root: root,
-		}
-
-		in := strings.NewReader(`[buildpack]
-id = "buildpack-id"
-name = "buildpack-name"
-version = "buildpack-version"
-
-[[stacks]]
-id = 'stack-id'
-build-images = ["build-image-tag"]
-run-images = ["run-image-tag"]
-
-[metadata]
-test-key = "test-value"
-`)
-
-		err := internal.WriteToFile(in, filepath.Join(root, "buildpack.toml"), 0644)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"))()
-
-		buildpack, err := libbuildpack.DefaultBuildpack(logger)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if !reflect.DeepEqual(buildpack, expected) {
-			t.Errorf("Buildpack = %s, wanted %s", buildpack, expected)
-		}
-	})
-
-	it("unmarshals from reader", func() {
-		expected := libbuildpack.Buildpack{
-			Info: libbuildpack.BuildpackInfo{
-				ID:      "buildpack-id",
-				Name:    "buildpack-name",
-				Version: "buildpack-version",
-			},
-			Stacks: []libbuildpack.BuildpackStack{
-				{
-					ID:          "stack-id",
-					BuildImages: []libbuildpack.BuildImages{"build-image-tag"},
-					RunImages:   []libbuildpack.RunImages{"run-image-tag"},
-				},
-			},
-			Metadata: libbuildpack.BuildpackMetadata{
-				"test-key": "test-value",
-			},
-		}
-
-		in := strings.NewReader(`[buildpack]
-id = "buildpack-id"
-name = "buildpack-name"
-version = "buildpack-version"
-
-[[stacks]]
-id = 'stack-id'
-build-images = ["build-image-tag"]
-run-images = ["run-image-tag"]
-
-[metadata]
-test-key = "test-value"
-`)
-
-		buildpack, err := libbuildpack.NewBuildpack(in, logger, "")
-		if err != nil {
-			t.Fatal(err)
 		}
 
 		if !reflect.DeepEqual(buildpack, expected) {
