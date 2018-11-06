@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package libbuildpack_test
+package application_test
 
 import (
 	"testing"
 
-	"github.com/buildpack/libbuildpack"
+	applicationPkg "github.com/buildpack/libbuildpack/application"
 	"github.com/buildpack/libbuildpack/internal"
+	"github.com/buildpack/libbuildpack/logger"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -31,11 +32,9 @@ func TestApplication(t *testing.T) {
 
 func testApplication(t *testing.T, when spec.G, it spec.S) {
 
-	var logger = libbuildpack.NewLogger(nil, nil)
-
 	it("returns the root of the application", func() {
 		root := internal.ScratchDir(t, "application")
-		application := libbuildpack.NewApplication(root, logger)
+		application := applicationPkg.Application{Root: root}
 
 		if application.Root != root {
 			t.Errorf("Application.Root = %s, wanted %s", application.Root, root)
@@ -46,7 +45,7 @@ func testApplication(t *testing.T, when spec.G, it spec.S) {
 		root := internal.ScratchDir(t, "application")
 		defer internal.ReplaceWorkingDirectory(t, root)()
 
-		application, err := libbuildpack.DefaultApplication(logger)
+		application, err := applicationPkg.DefaultApplication(logger.Logger{})
 		if err != nil {
 			t.Fatal(err)
 		}

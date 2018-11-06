@@ -14,22 +14,25 @@
  * limitations under the License.
  */
 
-package libbuildpack
+package layers
 
 import (
 	"fmt"
-	"os"
 )
 
-// DefaultStack creates a new instance of Stack, extracting the name from the PACK_STACK_ID environment variable.
-func DefaultStack(logger Logger) (string, error) {
-	s, ok := os.LookupEnv("PACK_STACK_ID")
+// Processes is a collection of Process instances.
+type Processes []Process
 
-	if !ok {
-		return "", fmt.Errorf("PACK_STACK_ID not set")
-	}
+// Process represents metadata about a type of command that can be run.
+type Process struct {
+	// Type is the type of the process.
+	Type string `toml:"type"`
 
-	logger.Debug("Stack: %s", s)
-	return s, nil
+	// Command is the command of the process.
+	Command string `toml:"command"`
 }
 
+// String makes Process satisfy the Stringer interface.
+func (p Process) String() string {
+	return fmt.Sprintf("Process{ Type: %s, Command: %s }", p.Type, p.Command)
+}

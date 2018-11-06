@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package libbuildpack
+package application
 
 import (
 	"fmt"
 	"os"
 
 	"github.com/buildpack/libbuildpack/internal"
+	"github.com/buildpack/libbuildpack/logger"
 )
 
 // Application represents the application being processed by buildpacks.
@@ -29,7 +30,7 @@ type Application struct {
 	Root string
 
 	// Logger is used to write debug and info to the console.
-	Logger Logger
+	Logger logger.Logger
 }
 
 // String makes Application satisfy the Stringer interface.
@@ -38,22 +39,22 @@ func (a Application) String() string {
 }
 
 // DefaultApplication creates a new instance of Application, extracting the Root path from the working directory.
-func DefaultApplication(logger Logger) (Application, error) {
+func DefaultApplication(logger logger.Logger) (Application, error) {
 	root, err := os.Getwd()
 	if err != nil {
 		return Application{}, err
 	}
 
-	return NewApplication(root, logger), nil
-}
-
-// NewApplication creates a new instance of Application, configuring the Root path.
-func NewApplication(root string, logger Logger) Application {
-	a := Application{root, logger}
-
 	if logger.IsDebugEnabled() {
-		logger.Debug("Application contents: %s", internal.DirectoryContents(root))
+		contents, err := internal.DirectoryContents(root)
+		if err != nil {
+			return Application{}, err
+		}
+		logger.Debug("Application contents: %s", contents)
 	}
 
-	return a
+	return Application{
+		root,
+		logger,
+	}, nil
 }

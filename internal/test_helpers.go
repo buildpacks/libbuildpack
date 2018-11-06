@@ -19,31 +19,10 @@ package internal
 import (
 	"fmt"
 	"io/ioutil"
-	"math"
 	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/bouk/monkey"
 )
-
-// CaptureExitStatus returns a pointer to the exit status code when os.Exit() is called.  Returns a function for use
-// with defer in order to clean up after capture.
-//
-// c, d := CaptureExitStatus(t)
-// defer d()
-func CaptureExitStatus(t *testing.T) (*int, func()) {
-	t.Helper()
-
-	code := math.MinInt64
-	pg := monkey.Patch(os.Exit, func(c int) {
-		code = c
-	})
-
-	return &code, func() {
-		pg.Unpatch()
-	}
-}
 
 // Console represents the standard console objects, stdin, stdout, and stderr.
 type Console struct {
@@ -125,9 +104,13 @@ func ProtectEnv(t *testing.T, keys ...string) func() {
 	return func() {
 		for k, v := range previous {
 			if v.ok {
-				os.Setenv(k, v.value)
+				if err := os.Setenv(k, v.value); err != nil {
+					t.Fatal(err)
+				}
 			} else {
-				os.Unsetenv(k)
+				if err := os.Unsetenv(k); err != nil {
+					t.Fatal(err)
+				}
 			}
 		}
 	}
@@ -193,13 +176,19 @@ func ReplaceEnv(t *testing.T, key string, value string) func() {
 	t.Helper()
 
 	previous, ok := os.LookupEnv(key)
-	os.Setenv(key, value)
+	if err := os.Setenv(key, value); err != nil {
+		t.Fatal(err)
+	}
 
 	return func() {
 		if ok {
-			os.Setenv(key, previous)
+			if err := os.Setenv(key, previous); err != nil {
+				t.Fatal(err)
+			}
 		} else {
-			os.Unsetenv(key)
+			if err := os.Unsetenv(key); err != nil {
+				t.Fatal(err)
+			}
 		}
 	}
 }
@@ -220,7 +209,11 @@ func ReplaceWorkingDirectory(t *testing.T, dir string) func() {
 		t.Fatal(err)
 	}
 
-	return func() { os.Chdir(previous) }
+	return func() {
+		if err := os.Chdir(previous); err != nil {
+			t.Fatal(err)
+		}
+	}
 }
 
 // ScratchDir returns a safe scratch directory for tests to modify.

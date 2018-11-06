@@ -14,32 +14,32 @@
  * limitations under the License.
  */
 
-package libbuildpack
+package buildpack
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"path"
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
 	"github.com/buildpack/libbuildpack/internal"
+	"github.com/buildpack/libbuildpack/logger"
 )
 
 // Buildpack represents the metadata associated with a buildpack.
 type Buildpack struct {
 	// Info is information about the buildpack.
-	Info BuildpackInfo `toml:"buildpack"`
+	Info Info `toml:"buildpack"`
 
 	// Stacks is the collection of stacks that the buildpack supports.
-	Stacks []BuildpackStack `toml:"stacks"`
+	Stacks []Stack `toml:"stacks"`
 
 	// Metadata is the additional metadata included in the buildpack.
-	Metadata BuildpackMetadata `toml:"metadata"`
+	Metadata Metadata `toml:"metadata"`
 
 	// Logger is used to write debug and info to the console.
-	Logger Logger
+	Logger logger.Logger
 
 	// Root is the path to the root directory for the buildpack.
 	Root string
@@ -51,52 +51,9 @@ func (b Buildpack) String() string {
 		b.Info, b.Stacks, b.Metadata, b.Logger, b.Root)
 }
 
-// BuildpackInfo is information about the buildpack.
-type BuildpackInfo struct {
-	// ID is the globally unique identifier of the buildpack.
-	ID string `toml:"id"`
-
-	// Name is the human readable name of the buildpack.
-	Name string `toml:"name"`
-
-	// Version is the semver-compliant version of the buildpack.
-	Version string `toml:"version"`
-}
-
-// String makes BuildpackInfo satisfy the Stringer interface.
-func (b BuildpackInfo) String() string {
-	return fmt.Sprintf("BuildpackInfo{ ID: %s, Name: %s, Version: %s }", b.ID, b.Name, b.Version)
-}
-
-// BuildpackMetadata is additional metadata included in the buildpack
-type BuildpackMetadata map[string]interface{}
-
-// BuildpackStack represents metadata about the stacks associated with the buildpack.
-type BuildpackStack struct {
-	// ID is the globally unique identifier of the stack.
-	ID string `toml:"id"`
-
-	// BuildImages are the suggested sources for stacks if the platform is unaware of the stack id.
-	BuildImages []BuildImages `toml:"build-images"`
-
-	// RunImages are the suggested sources for stacks if the platform is unaware of the stack id.
-	RunImages []RunImages `toml:"run-images"`
-}
-
-// String makes BuildpackStack satisfy the Stringer interface.
-func (b BuildpackStack) String() string {
-	return fmt.Sprintf("BuildpackStack{ ID: %s, BuildImages: %s, RunImages: %s }", b.ID, b.BuildImages, b.RunImages)
-}
-
-// BuildImages is the build image source for a particular stack id.
-type BuildImages string
-
-// RunImages is the run image source for a particular stack id.
-type RunImages string
-
 // DefaultBuildpack creates a new instance of Buildpack extracting the contents of the buildpack.toml file in the root
 // of the buildpack.
-func DefaultBuildpack(logger Logger) (Buildpack, error) {
+func DefaultBuildpack(logger logger.Logger) (Buildpack, error) {
 	f, err := findBuildpackToml()
 	if err != nil {
 		return Buildpack{}, err
@@ -108,13 +65,10 @@ func DefaultBuildpack(logger Logger) (Buildpack, error) {
 	}
 	defer in.Close()
 
-	return NewBuildpack(in, logger, filepath.Dir(f))
-}
-
-// NewBuildpack creates a new instance of Buildpack from a specified io.Reader.  Returns an error if the contents of
-// the reader are not valid TOML.
-func NewBuildpack(in io.Reader, logger Logger, root string) (Buildpack, error) {
-	b := Buildpack{Logger: logger, Root: root}
+	b := Buildpack{
+		Logger: logger,
+		Root:   filepath.Dir(f),
+	}
 
 	if _, err := toml.DecodeReader(in, &b); err != nil {
 		return Buildpack{}, err

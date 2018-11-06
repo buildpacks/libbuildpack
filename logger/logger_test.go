@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package libbuildpack_test
+package logger_test
 
 import (
 	"bytes"
 	"io"
+	"strings"
 	"testing"
 
-	"github.com/buildpack/libbuildpack"
+	"github.com/buildpack/libbuildpack/internal"
+	loggerPkg "github.com/buildpack/libbuildpack/logger"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -35,7 +37,7 @@ func testLogger(t *testing.T, when spec.G, it spec.S) {
 	it("writes output to debug writer", func() {
 		var debug bytes.Buffer
 
-		logger := libbuildpack.NewLogger(&debug, nil)
+		logger := loggerPkg.NewLogger(&debug, nil)
 		logger.Debug("%s %s", "test-string-1", "test-string-2")
 
 		if debug.String() != "test-string-1 test-string-2\n" {
@@ -46,14 +48,14 @@ func testLogger(t *testing.T, when spec.G, it spec.S) {
 	it("does not write to debug if not configured", func() {
 		var debug io.Writer
 
-		logger := libbuildpack.NewLogger(debug, nil)
+		logger := loggerPkg.NewLogger(debug, nil)
 		logger.Debug("%s %s", "test-string-1", "test-string-2")
 	})
 
 	it("reports debug enabled when configured", func() {
 		var debug bytes.Buffer
 
-		if !libbuildpack.NewLogger(&debug, nil).IsDebugEnabled() {
+		if !loggerPkg.NewLogger(&debug, nil).IsDebugEnabled() {
 			t.Errorf("IsDebugEnabled = false, expected true")
 		}
 	})
@@ -61,7 +63,7 @@ func testLogger(t *testing.T, when spec.G, it spec.S) {
 	it("reports debug disabled when not configured", func() {
 		var debug io.Writer
 
-		if libbuildpack.NewLogger(debug, nil).IsDebugEnabled() {
+		if loggerPkg.NewLogger(debug, nil).IsDebugEnabled() {
 			t.Errorf("IsDebugEnabled = true, expected false")
 		}
 	})
@@ -69,7 +71,7 @@ func testLogger(t *testing.T, when spec.G, it spec.S) {
 	it("writes output to info writer", func() {
 		var info bytes.Buffer
 
-		logger := libbuildpack.NewLogger(nil, &info)
+		logger := loggerPkg.NewLogger(nil, &info)
 		logger.Info("%s %s", "test-string-1", "test-string-2")
 
 		if info.String() != "test-string-1 test-string-2\n" {
@@ -80,14 +82,14 @@ func testLogger(t *testing.T, when spec.G, it spec.S) {
 	it("does not write to info if not configured", func() {
 		var info io.Writer
 
-		logger := libbuildpack.NewLogger(nil, info)
+		logger := loggerPkg.NewLogger(nil, info)
 		logger.Info("%s %s", "test-string-1", "test-string-2")
 	})
 
 	it("reports info enabled when configured", func() {
 		var info bytes.Buffer
 
-		if !libbuildpack.NewLogger(nil, &info).IsInfoEnabled() {
+		if !loggerPkg.NewLogger(nil, &info).IsInfoEnabled() {
 			t.Errorf("IsInfoEnabled = false, expected true")
 		}
 	})
@@ -95,8 +97,46 @@ func testLogger(t *testing.T, when spec.G, it spec.S) {
 	it("reports info disabled when not configured", func() {
 		var info io.Writer
 
-		if libbuildpack.NewLogger(nil, info).IsInfoEnabled() {
+		if loggerPkg.NewLogger(nil, info).IsInfoEnabled() {
 			t.Errorf("IsInfoEnabled = true, expected false")
+		}
+	})
+
+	it("suppresses debug output", func() {
+		c, d := internal.ReplaceConsole(t)
+		defer d()
+
+		logger := loggerPkg.DefaultLogger()
+
+		logger.Debug("test-debug-output")
+		logger.Info("test-info-output")
+
+		if strings.Contains(c.Err(t), "test-debug-output") {
+			t.Errorf("stderr contained test-debug-output, expected not")
+		}
+
+		if !strings.Contains(c.Out(t), "test-info-output") {
+			t.Errorf("stdout did not contain test-info-output, expected to")
+		}
+	})
+
+	it("allows debug output if BP_DEBUG is set", func() {
+		c, d := internal.ReplaceConsole(t)
+		defer d()
+
+		defer internal.ReplaceEnv(t, "BP_DEBUG", "")()
+
+		logger := loggerPkg.DefaultLogger()
+
+		logger.Debug("test-debug-output")
+		logger.Info("test-info-output")
+
+		if !strings.Contains(c.Err(t), "test-debug-output") {
+			t.Errorf("stderr did not contain test-debug-output, expected to")
+		}
+
+		if !strings.Contains(c.Out(t), "test-info-output") {
+			t.Errorf("stdout did not contain test-info-output, expected to")
 		}
 	})
 }
