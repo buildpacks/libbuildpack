@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package libbuildpack
+package logger
 
 import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
 )
 
 // Logger is a type that contains references to the console output for debug and info logging levels.
@@ -36,8 +37,8 @@ func (l Logger) Debug(format string, args ...interface{}) {
 	}
 
 	s := fmt.Sprintf(format, args...)
-	fmt.Fprintf(l.debug, "%s\n", s)
-	l.debug.Flush()
+	_, _ = fmt.Fprintf(l.debug, "%s\n", s)
+	_ = l.debug.Flush()
 }
 
 // Info prints output to the configured info writer, interpolating the format and any arguments and adding a newline
@@ -48,8 +49,8 @@ func (l Logger) Info(format string, args ...interface{}) {
 	}
 
 	s := fmt.Sprintf(format, args...)
-	fmt.Fprintf(l.info, "%s\n", s)
-	l.info.Flush()
+	_, _ = fmt.Fprintf(l.info, "%s\n", s)
+	_ = l.info.Flush()
 }
 
 // IsDebugEnabled returns true if debug logging is enabled, false otherwise.
@@ -65,6 +66,17 @@ func (l Logger) IsInfoEnabled() bool {
 // String makes Logger satisfy the Stringer interface.
 func (l Logger) String() string {
 	return fmt.Sprintf("Logger{ debug: %v, info: %v }", l.debug, l.info)
+}
+
+// DefaultLogger creates a new instace of Logger, suppressing debug output unless BP_DEBUG is set.
+func DefaultLogger() Logger {
+	var debug io.Writer
+
+	if _, ok := os.LookupEnv("BP_DEBUG"); ok {
+		debug = os.Stderr
+	}
+
+	return NewLogger(debug, os.Stdout)
 }
 
 // NewLogger creates a new instance of Logger, configuring the debug and info writers to use.  If writer is nil, that

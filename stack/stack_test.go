@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package libbuildpack_test
+package stack_test
 
 import (
 	"os"
 	"testing"
 
-	"github.com/buildpack/libbuildpack"
 	"github.com/buildpack/libbuildpack/internal"
+	"github.com/buildpack/libbuildpack/logger"
+	"github.com/buildpack/libbuildpack/stack"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -32,12 +33,10 @@ func TestStack(t *testing.T) {
 
 func testStack(t *testing.T, when spec.G, it spec.S) {
 
-	logger := libbuildpack.Logger{}
-
 	it("extracts value from PACK_STACK_ID", func() {
 		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack-name")()
 
-		actual, err := libbuildpack.DefaultStack(logger)
+		actual, err := stack.DefaultStack(logger.Logger{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -50,9 +49,11 @@ func testStack(t *testing.T, when spec.G, it spec.S) {
 	it("returns error when PACK_STACK_ID not set", func() {
 		defer internal.ProtectEnv(t, "PACK_STACK_ID")()
 
-		os.Unsetenv("PACK_STACK_ID")
+		if err := os.Unsetenv("PACK_STACK_ID"); err != nil {
+			t.Fatal(err)
+		}
 
-		_, err := libbuildpack.DefaultStack(logger)
+		_, err := stack.DefaultStack(logger.Logger{})
 		if err.Error() != "PACK_STACK_ID not set" {
 			t.Errorf("DefaultStack = %s, expected PACK_STACK_ID not set", err.Error())
 		}

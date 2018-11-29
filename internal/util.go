@@ -26,15 +26,17 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-func DirectoryContents(root string) []string {
+func DirectoryContents(root string) ([]string, error) {
 	var contents []string
 
-	filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	if err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		contents = append(contents, path)
 		return nil
-	})
+	}); err != nil {
+		return nil, err
+	}
 
-	return contents
+	return contents, nil
 }
 
 func FileExists(file string) (bool, error) {
@@ -78,6 +80,7 @@ func WriteToFile(source io.Reader, destFile string, mode os.FileMode) error {
 	if err != nil {
 		return err
 	}
+
 	defer fh.Close()
 
 	_, err = io.Copy(fh, source)

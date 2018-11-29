@@ -14,122 +14,109 @@
  * limitations under the License.
  */
 
-package libbuildpack
+package build
 
 import (
 	"fmt"
-	"io"
-	"os"
+
+	applicationPkg "github.com/buildpack/libbuildpack/application"
+	buildpackPkg "github.com/buildpack/libbuildpack/buildpack"
+	buildplanPkg "github.com/buildpack/libbuildpack/buildplan"
+	layersPkg "github.com/buildpack/libbuildpack/layers"
+	loggerPkg "github.com/buildpack/libbuildpack/logger"
+	platformPkg "github.com/buildpack/libbuildpack/platform"
+	stackPkg "github.com/buildpack/libbuildpack/stack"
 )
 
 // Build represents all of the components available to a buildpack at build time.
 type Build struct {
 	// Application is the application being processed by the buildpack.
-	Application Application
+	Application applicationPkg.Application
 
 	// Buildpack represents the metadata associated with a buildpack.
-	Buildpack Buildpack
+	Buildpack buildpackPkg.Buildpack
 
 	// BuildPlan represents dependencies contributed by previous builds.
-	BuildPlan BuildPlan
+	BuildPlan buildplanPkg.BuildPlan
 
-	// Cache represents the cache layers contributed by a buildpack.
-	Cache Cache
-
-	// Launch represents the launch layers contributed by a buildpack.
-	Launch Launch
+	// Layers represents the launch layers contributed by a buildpack.
+	Layers layersPkg.Layers
 
 	// Logger is used to write debug and info to the console.
-	Logger Logger
+	Logger loggerPkg.Logger
 
 	// Platform represents components contributed by the platform to the buildpack.
-	Platform Platform
+	Platform platformPkg.Platform
 
 	// Stack is the stack currently available to the application.
 	Stack string
 }
 
-// Failure signals an unsuccessful build by exiting with a specified positive status code.  This should be the final
-// function called in building.
-func (b Build) Failure(code int) {
+// Failure signals an unsuccessful build by exiting with a specified positive status code.
+func (b Build) Failure(code int) int {
 	b.Logger.Debug("Build failed. Exiting with %d.", code)
 	b.Logger.Info("")
-	os.Exit(code)
+	return code
 }
 
 // String makes Build satisfy the Stringer interface.
 func (b Build) String() string {
-	return fmt.Sprintf("Build{ Application: %s, Buildpack: %s, BuildPlan: %s, Cache: %s, Launch: %s, Logger: %s, Platform: %s, Stack: %s }",
-		b.Application, b.Buildpack, b.BuildPlan, b.Cache, b.Launch, b.Logger, b.Platform, b.Stack)
+	return fmt.Sprintf("Build{ Application: %s, Buildpack: %s, BuildPlan: %s, Layers: %s, Logger: %s, Platform: %s, Stack: %s }",
+		b.Application, b.Buildpack, b.BuildPlan, b.Layers, b.Logger, b.Platform, b.Stack)
 }
 
-// Success signals a successful build by exiting with a zero status code.  This should be the final function called in
-// building.
-func (b Build) Success() {
+// Success signals a successful build by exiting with a zero status code.
+func (b Build) Success(buildPlan buildplanPkg.BuildPlan) (int, error) {
 	b.Logger.Debug("Build success. Exiting with %d.", 0)
-	b.Logger.Info("")
-	os.Exit(0)
-}
 
-func (b Build) defaultLogger() Logger {
-	var debug io.Writer
-
-	if _, ok := os.LookupEnv("BP_DEBUG"); ok {
-		debug = os.Stderr
+	if err := buildPlan.Write(); err != nil {
+		return -1, err
 	}
 
-	return NewLogger(debug, os.Stdout)
+	return 0, nil
 }
 
 // DefaultBuild creates a new instance of Build using default values.
 func DefaultBuild() (Build, error) {
-	b := Build{}
+	logger := loggerPkg.DefaultLogger()
 
-	logger := b.defaultLogger()
-
-	application, err := DefaultApplication(logger)
+	application, err := applicationPkg.DefaultApplication(logger)
 	if err != nil {
 		return Build{}, err
 	}
 
-	buildpack, err := DefaultBuildpack(logger)
+	buildpack, err := buildpackPkg.DefaultBuildpack(logger)
 	if err != nil {
 		return Build{}, err
 	}
 
-	buildPlan, err := DefaultBuildPlan(logger)
+	buildPlan := buildplanPkg.BuildPlan{}
+	if err := buildPlan.Init(); err != nil {
+		return Build{}, err
+	}
+
+	layers, err := layersPkg.DefaultLayers(logger)
 	if err != nil {
 		return Build{}, err
 	}
 
-	cache, err := DefaultCache(logger)
+	platform, err := platformPkg.DefaultPlatform(logger)
 	if err != nil {
 		return Build{}, err
 	}
 
-	launch, err := DefaultLaunch(logger)
+	s, err := stackPkg.DefaultStack(logger)
 	if err != nil {
 		return Build{}, err
 	}
 
-	platform, err := DefaultPlatform(logger)
-	if err != nil {
-		return Build{}, err
-	}
-
-	stack, err := DefaultStack(logger)
-	if err != nil {
-		return Build{}, err
-	}
-
-	b.Application = application
-	b.Buildpack = buildpack
-	b.BuildPlan = buildPlan
-	b.Cache = cache
-	b.Launch = launch
-	b.Logger = logger
-	b.Platform = platform
-	b.Stack = stack
-
-	return b, nil
+	return Build{
+		application,
+		buildpack,
+		buildPlan,
+		layers,
+		logger,
+		platform,
+		s,
+	}, nil
 }
