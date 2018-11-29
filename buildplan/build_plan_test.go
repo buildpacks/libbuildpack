@@ -78,7 +78,7 @@ func testBuildPlan(t *testing.T, when spec.G, it spec.S) {
 			},
 		}
 
-		if err := buildPlan.Write(); err != nil {
+		if err := buildPlan.Write(buildplan.DefaultWriter); err != nil {
 			t.Fatal(err)
 		}
 

@@ -39,6 +39,9 @@ type Build struct {
 	// BuildPlan represents dependencies contributed by previous builds.
 	BuildPlan buildplanPkg.BuildPlan
 
+	// BuildPlanWriter is the writer used to write the BuildPlan in Pass().
+	BuildPlanWriter buildplanPkg.Writer
+
 	// Layers represents the launch layers contributed by a buildpack.
 	Layers layersPkg.Layers
 
@@ -69,7 +72,7 @@ func (b Build) String() string {
 func (b Build) Success(buildPlan buildplanPkg.BuildPlan) (int, error) {
 	b.Logger.Debug("Build success. Exiting with %d.", 0)
 
-	if err := buildPlan.Write(); err != nil {
+	if err := buildPlan.Write(b.BuildPlanWriter); err != nil {
 		return -1, err
 	}
 
@@ -95,6 +98,8 @@ func DefaultBuild() (Build, error) {
 		return Build{}, err
 	}
 
+	buildPlanWriter := buildplanPkg.DefaultWriter
+
 	layers, err := layersPkg.DefaultLayers(logger)
 	if err != nil {
 		return Build{}, err
@@ -114,6 +119,7 @@ func DefaultBuild() (Build, error) {
 		application,
 		buildpack,
 		buildPlan,
+		buildPlanWriter,
 		layers,
 		logger,
 		platform,

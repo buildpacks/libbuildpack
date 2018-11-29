@@ -38,6 +38,9 @@ type Detect struct {
 	// BuildPlan represents dependencies contributed by previous builds.
 	BuildPlan buildplanPkg.BuildPlan
 
+	// BuildPlanWriter is the writer used to write the BuildPlan in Pass().
+	BuildPlanWriter buildplanPkg.Writer
+
 	// Logger is used to write debug and info to the console.
 	Logger loggerPkg.Logger
 
@@ -64,7 +67,7 @@ func (d Detect) Fail() int {
 func (d Detect) Pass(buildPlan buildplanPkg.BuildPlan) (int, error) {
 	d.Logger.Debug("Detection passed. Exiting with %d.", 0)
 
-	if err := buildPlan.Write() ; err != nil {
+	if err := buildPlan.Write(d.BuildPlanWriter); err != nil {
 		return -1, err
 	}
 
@@ -93,6 +96,8 @@ func DefaultDetect() (Detect, error) {
 
 	buildPlan := buildplanPkg.BuildPlan{}
 
+	buildPlanWriter := buildplanPkg.DefaultWriter
+
 	platform, err := platformPkg.DefaultPlatform(logger)
 	if err != nil {
 		return Detect{}, err
@@ -107,6 +112,7 @@ func DefaultDetect() (Detect, error) {
 		application,
 		buildpack,
 		buildPlan,
+		buildPlanWriter,
 		logger,
 		platform,
 		stack,

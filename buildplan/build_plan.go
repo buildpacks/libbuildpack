@@ -39,25 +39,9 @@ func (b BuildPlan) Init() error {
 	return nil
 }
 
-// Write writes the build plan to a collection files rooted at os.Args[2].
-func (b BuildPlan) Write() error {
-	root, err := internal.OsArgs(2)
-	if err != nil {
-		return err
-	}
-
-	for name, dep := range b {
-		s, err := internal.ToTomlString(dep)
-		if err != nil {
-			return err
-		}
-
-		if err := internal.WriteToFile(strings.NewReader(s), filepath.Join(root, name), 0644); err != nil {
-			return err
-		}
-	}
-
-	return nil
+// Write writes the build plan.
+func (b BuildPlan) Write(writer Writer) error {
+	return writer(b)
 }
 
 // String makes BuildPlan satisfy the Stringer interface.
@@ -69,4 +53,28 @@ func (b BuildPlan) String() string {
 	}
 
 	return fmt.Sprintf("BuildPlan{ %s }", strings.Join(entries, ", "))
+}
+
+// Writer is a function write writes the contents of a BuildPlan
+type Writer func(buildPlan BuildPlan) error
+
+// DefaultWriter writes the build plan to a collection of files rooted at os.Args[2].
+var DefaultWriter = func(buildPlan BuildPlan) error {
+	root, err := internal.OsArgs(2)
+	if err != nil {
+		return err
+	}
+
+	for name, dep := range buildPlan {
+		s, err := internal.ToTomlString(dep)
+		if err != nil {
+			return err
+		}
+
+		if err := internal.WriteToFile(strings.NewReader(s), filepath.Join(root, name), 0644); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
