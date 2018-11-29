@@ -150,7 +150,7 @@ test-key = "test-value"
 
 		actual := detect.Fail()
 
-		if actual != 100 {
+		if actual != detectPkg.FailStatusCode {
 			t.Errorf("Detect.Fail() = %d, expected 100", actual)
 		}
 	})
@@ -178,7 +178,7 @@ test-key = "test-value"
 			t.Fatal(err)
 		}
 
-		if actual != 0 {
+		if actual != detectPkg.PassStatusCode {
 			t.Errorf("Detect.Pass() = %d, expected 0", actual)
 		}
 

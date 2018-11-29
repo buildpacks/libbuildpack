@@ -26,6 +26,7 @@ import (
 	buildPkg "github.com/buildpack/libbuildpack/build"
 	"github.com/buildpack/libbuildpack/buildpack"
 	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/buildpack/libbuildpack/detect"
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/layers"
 	"github.com/buildpack/libbuildpack/logger"
@@ -137,7 +138,7 @@ test-key = "test-value"
 			t.Fatal(err)
 		}
 
-		if actual != 0 {
+		if actual != detect.PassStatusCode {
 			t.Errorf("Build.Success() = %d, expected 0", actual)
 		}
 
