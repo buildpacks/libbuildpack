@@ -29,7 +29,7 @@ import (
 )
 
 func TestPlatform(t *testing.T) {
-	spec.Run(t, "Platform", testPlatform, spec.Report(report.Terminal{}))
+	spec.Run(t, "Platform", testPlatform, spec.Random(), spec.Report(report.Terminal{}))
 }
 
 func testPlatform(t *testing.T, when spec.G, it spec.S) {

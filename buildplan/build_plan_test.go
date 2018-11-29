@@ -28,7 +28,7 @@ import (
 )
 
 func TestBuildPlan(t *testing.T) {
-	spec.Run(t, "BuildPlan", testBuildPlan, spec.Report(report.Terminal{}))
+	spec.Run(t, "BuildPlan", testBuildPlan, spec.Random(), spec.Report(report.Terminal{}))
 }
 
 func testBuildPlan(t *testing.T, when spec.G, it spec.S) {

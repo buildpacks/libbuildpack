@@ -29,7 +29,7 @@ import (
 )
 
 func TestEnvironmentVariable(t *testing.T) {
-	spec.Run(t, "EnvironmentVariable", testEnvironmentVariable, spec.Report(report.Terminal{}))
+	spec.Run(t, "EnvironmentVariable", testEnvironmentVariable, spec.Random(), spec.Report(report.Terminal{}))
 }
 
 func testEnvironmentVariable(t *testing.T, when spec.G, it spec.S) {
