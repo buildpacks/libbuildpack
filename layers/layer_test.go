@@ -29,7 +29,7 @@ import (
 )
 
 func TestLayer(t *testing.T) {
-	spec.Run(t, "Layer", testLayer, spec.Random(), spec.Report(report.Terminal{}))
+	spec.Run(t, "Layer", testLayer, spec.Report(report.Terminal{}))
 }
 
 func testLayer(t *testing.T, when spec.G, it spec.S) {
@@ -137,7 +137,7 @@ launch = true
 
 			internal.BeFileLike(t, filepath.Join(root, "profile.d", "test-name"), 0644, "test-string-1")
 		})
-	}, spec.Random())
+	})
 
 	when("environment files", func() {
 
@@ -175,7 +175,7 @@ launch = true
 
 				internal.BeFileLike(t, filepath.Join(root, "env.build", "TEST_NAME.override"), 0644, "test-string-1")
 			})
-		}, spec.Random())
+		})
 
 		when("launch", func() {
 
@@ -212,7 +212,7 @@ launch = true
 				internal.BeFileLike(t, filepath.Join(root, "env.launch", "TEST_NAME.override"), 0644, "test-string-1")
 			})
 
-		}, spec.Random())
+		})
 
 		when("shared", func() {
 
@@ -249,6 +249,6 @@ launch = true
 				internal.BeFileLike(t, filepath.Join(root, "env", "TEST_NAME.override"), 0644, "test-string-1")
 			})
 
-		}, spec.Random())
+		})
 	})
 }
