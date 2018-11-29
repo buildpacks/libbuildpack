@@ -27,6 +27,14 @@ import (
 	stackPkg "github.com/buildpack/libbuildpack/stack"
 )
 
+const (
+	// FailStatusCode is the status code returned for fail.
+	FailStatusCode = 100
+
+	// PassStatusCode is the status code returned for pass.
+	PassStatusCode = 0
+)
+
 // Detect represents all of the components available to a buildpack at detect time.
 type Detect struct {
 	// Application is the application being processed by the buildpack.
@@ -59,19 +67,19 @@ func (d Detect) Error(code int) int {
 
 // Fail signals an unsuccessful detection by exiting with a 100 status code.
 func (d Detect) Fail() int {
-	d.Logger.Debug("Detection failed. Exiting with %d.", 100)
-	return 100
+	d.Logger.Debug("Detection failed. Exiting with %d.", FailStatusCode)
+	return FailStatusCode
 }
 
 // Pass signals a successful detection by exiting with a 0 status code.
 func (d Detect) Pass(buildPlan buildplanPkg.BuildPlan) (int, error) {
-	d.Logger.Debug("Detection passed. Exiting with %d.", 0)
+	d.Logger.Debug("Detection passed. Exiting with %d.", PassStatusCode)
 
 	if err := buildPlan.Write(d.BuildPlanWriter); err != nil {
 		return -1, err
 	}
 
-	return 0, nil
+	return PassStatusCode, nil
 }
 
 // String makes Detect satisfy the Stringer interface.

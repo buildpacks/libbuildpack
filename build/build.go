@@ -28,6 +28,9 @@ import (
 	stackPkg "github.com/buildpack/libbuildpack/stack"
 )
 
+// SuccessStatusCode is the status code returned for success.
+const SuccessStatusCode = 0
+
 // Build represents all of the components available to a buildpack at build time.
 type Build struct {
 	// Application is the application being processed by the buildpack.
@@ -70,13 +73,13 @@ func (b Build) String() string {
 
 // Success signals a successful build by exiting with a zero status code.
 func (b Build) Success(buildPlan buildplanPkg.BuildPlan) (int, error) {
-	b.Logger.Debug("Build success. Exiting with %d.", 0)
+	b.Logger.Debug("Build success. Exiting with %d.", SuccessStatusCode)
 
 	if err := buildPlan.Write(b.BuildPlanWriter); err != nil {
 		return -1, err
 	}
 
-	return 0, nil
+	return SuccessStatusCode, nil
 }
 
 // DefaultBuild creates a new instance of Build using default values.
