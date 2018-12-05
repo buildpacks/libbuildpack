@@ -68,7 +68,7 @@ func (l Logger) String() string {
 	return fmt.Sprintf("Logger{ debug: %v, info: %v }", l.debug, l.info)
 }
 
-// DefaultLogger creates a new instace of Logger, suppressing debug output unless BP_DEBUG is set.
+// DefaultLogger creates a new instance of Logger, suppressing debug output unless BP_DEBUG is set.
 func DefaultLogger() Logger {
 	var debug io.Writer
 
