@@ -19,7 +19,6 @@ package buildplan
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -61,23 +60,17 @@ type Writer func(buildPlan BuildPlan) error
 // DefaultWriter writes the build plan to a collection of files rooted at os.Args[<INDEX>].
 func DefaultWriter(index int) Writer {
 	return func(buildPlan BuildPlan) error {
-		root, err := internal.OsArgs(index)
+		path, err := internal.OsArgs(index)
 		if err != nil {
 			return err
 		}
 
-		for name, dep := range buildPlan {
-			s, err := internal.ToTomlString(dep)
-			if err != nil {
-				return err
-			}
-
-			if err := internal.WriteToFile(strings.NewReader(s), filepath.Join(root, name), 0644); err != nil {
-				return err
-			}
+		s, err := internal.ToTomlString(buildPlan)
+		if err != nil {
+			return err
 		}
 
-		return nil
+		return internal.WriteToFile(strings.NewReader(s), path, 0644)
 	}
 
 }
