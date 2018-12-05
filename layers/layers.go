@@ -57,15 +57,3 @@ func (l Layers) WriteMetadata(metadata Metadata) error {
 	l.Logger.Debug("Writing launch metadata: %s <= %s", f, m)
 	return internal.WriteToFile(strings.NewReader(m), f, 0644)
 }
-
-// DefaultLayers creates a new instance of Layers, extracting the Root path from os.Args[3].
-func DefaultLayers(logger logger.Logger) (Layers, error) {
-	root, err := internal.OsArgs(3)
-	if err != nil {
-		return Layers{}, err
-	}
-
-	logger.Debug("Layers root: %s", root)
-
-	return Layers{root, logger}, nil
-}

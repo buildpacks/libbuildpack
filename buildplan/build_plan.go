@@ -58,23 +58,26 @@ func (b BuildPlan) String() string {
 // Writer is a function write writes the contents of a BuildPlan
 type Writer func(buildPlan BuildPlan) error
 
-// DefaultWriter writes the build plan to a collection of files rooted at os.Args[2].
-var DefaultWriter = func(buildPlan BuildPlan) error {
-	root, err := internal.OsArgs(2)
-	if err != nil {
-		return err
-	}
-
-	for name, dep := range buildPlan {
-		s, err := internal.ToTomlString(dep)
+// DefaultWriter writes the build plan to a collection of files rooted at os.Args[<INDEX>].
+func DefaultWriter(index int) Writer {
+	return func(buildPlan BuildPlan) error {
+		root, err := internal.OsArgs(index)
 		if err != nil {
 			return err
 		}
 
-		if err := internal.WriteToFile(strings.NewReader(s), filepath.Join(root, name), 0644); err != nil {
-			return err
+		for name, dep := range buildPlan {
+			s, err := internal.ToTomlString(dep)
+			if err != nil {
+				return err
+			}
+
+			if err := internal.WriteToFile(strings.NewReader(s), filepath.Join(root, name), 0644); err != nil {
+				return err
+			}
 		}
+
+		return nil
 	}
 
-	return nil
 }
