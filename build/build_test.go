@@ -26,7 +26,6 @@ import (
 	buildPkg "github.com/buildpack/libbuildpack/build"
 	"github.com/buildpack/libbuildpack/buildpack"
 	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/buildpack/libbuildpack/detect"
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/layers"
 	"github.com/buildpack/libbuildpack/logger"
@@ -42,7 +41,7 @@ func TestBuild(t *testing.T) {
 func testBuild(t *testing.T, when spec.G, it spec.S) {
 
 	it("contains default values", func() {
-		root := internal.ScratchDir(t, "detect")
+		root := internal.ScratchDir(t, "build")
 		defer internal.ReplaceWorkingDirectory(t, root)()
 		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
 
@@ -83,31 +82,31 @@ test-key = "test-value"
 		}
 
 		if reflect.DeepEqual(build.Application, application.Application{}) {
-			t.Errorf("detect.Application should not be empty")
+			t.Errorf("build.Application should not be empty")
 		}
 
 		if reflect.DeepEqual(build.Buildpack, buildpack.Buildpack{}) {
-			t.Errorf("detect.Buildpack should not be empty")
+			t.Errorf("build.Buildpack should not be empty")
 		}
 
 		if reflect.DeepEqual(build.BuildPlan, buildplan.BuildPlan{}) {
-			t.Errorf("detect.BuildPlan should not be empty")
+			t.Errorf("build.BuildPlan should not be empty")
 		}
 
 		if reflect.DeepEqual(build.Layers, layers.Layers{}) {
-			t.Errorf("detect.Layers should not be empty")
+			t.Errorf("build.Layers should not be empty")
 		}
 
 		if reflect.DeepEqual(build.Logger, logger.Logger{}) {
-			t.Errorf("detect.Logger should not be empty")
+			t.Errorf("build.Logger should not be empty")
 		}
 
 		if reflect.DeepEqual(build.Platform, platform.Platform{}) {
-			t.Errorf("detect.Platform should not be empty")
+			t.Errorf("build.Platform should not be empty")
 		}
 
 		if reflect.DeepEqual(build.Stack, "") {
-			t.Errorf("detect.Stack should not be empty")
+			t.Errorf("build.Stack should not be empty")
 		}
 	})
 
@@ -138,7 +137,7 @@ test-key = "test-value"
 			t.Fatal(err)
 		}
 
-		if actual != detect.PassStatusCode {
+		if actual != buildPkg.SuccessStatusCode {
 			t.Errorf("Build.Success() = %d, expected 0", actual)
 		}
 
