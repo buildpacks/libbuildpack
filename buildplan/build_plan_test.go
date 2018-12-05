@@ -17,7 +17,6 @@
 package buildplan_test
 
 import (
-	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -63,33 +62,6 @@ func testBuildPlan(t *testing.T, when spec.G, it spec.S) {
 		if !reflect.DeepEqual(buildPlan, expected) {
 			t.Errorf("BuildPlan = %s, wanted %s", buildPlan, expected)
 		}
-	})
-
-	it("marshals to os.Args[2]", func() {
-		root := internal.ScratchDir(t, "buildPlan")
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan"))()
-
-		buildPlan := buildplan.BuildPlan{
-			"alpha": buildplan.Dependency{
-				Version:  "alpha-version",
-				Metadata: buildplan.Metadata{"test-key": "test-value"},
-			},
-			"bravo": buildplan.Dependency{
-			},
-		}
-
-		if err := buildPlan.Write(buildplan.DefaultWriter); err != nil {
-			t.Fatal(err)
-		}
-
-		internal.BeFileLike(t, filepath.Join(root, "plan", "alpha"), 0644, `version = "alpha-version"
-
-[metadata]
-  test-key = "test-value"
-`)
-
-		internal.BeFileLike(t, filepath.Join(root, "plan", "bravo"), 0644, `version = ""
-`)
 	})
 
 	it("returns a dependency by name", func() {

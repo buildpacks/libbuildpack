@@ -41,13 +41,8 @@ func (p Platform) String() string {
 	return fmt.Sprintf("Platform{ Root: %s, Envs: %s, Logger: %s }", p.Root, p.Envs, p.Logger)
 }
 
-// DefaultPlatform creates a new instance of Platform, extracting the Root path from os.Args[1].
-func DefaultPlatform(logger logger.Logger) (Platform, error) {
-	root, err := internal.OsArgs(1)
-	if err != nil {
-		return Platform{}, err
-	}
-
+// DefaultPlatform creates a new instance of Platform.
+func DefaultPlatform(root string, logger logger.Logger) (Platform, error) {
 	if logger.IsDebugEnabled() {
 		contents, err := internal.DirectoryContents(root)
 		if err != nil {

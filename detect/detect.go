@@ -22,6 +22,7 @@ import (
 	applicationPkg "github.com/buildpack/libbuildpack/application"
 	buildpackPkg "github.com/buildpack/libbuildpack/buildpack"
 	buildplanPkg "github.com/buildpack/libbuildpack/buildplan"
+	"github.com/buildpack/libbuildpack/internal"
 	loggerPkg "github.com/buildpack/libbuildpack/logger"
 	platformPkg "github.com/buildpack/libbuildpack/platform"
 	stackPkg "github.com/buildpack/libbuildpack/stack"
@@ -104,9 +105,13 @@ func DefaultDetect() (Detect, error) {
 
 	buildPlan := buildplanPkg.BuildPlan{}
 
-	buildPlanWriter := buildplanPkg.DefaultWriter
+	buildPlanWriter := buildplanPkg.DefaultWriter(2)
 
-	platform, err := platformPkg.DefaultPlatform(logger)
+	platformRoot, err := internal.OsArgs(1)
+	if err != nil {
+		return Detect{}, err
+	}
+	platform, err := platformPkg.DefaultPlatform(platformRoot, logger)
 	if err != nil {
 		return Detect{}, err
 	}

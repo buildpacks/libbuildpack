@@ -75,7 +75,7 @@ test-key = "test-value"
 			t.Fatal(err)
 		}
 
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), root, root, root, root)()
+		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "layers"), filepath.Join(root, "platform"), filepath.Join(root, "plan"))()
 
 		build, err := buildPkg.DefaultBuild()
 		if err != nil {
@@ -124,7 +124,7 @@ test-key = "test-value"
 			t.Fatal(err)
 		}
 
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), root, root, root, root)()
+		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "layers"), filepath.Join(root, "platform"), filepath.Join(root, "plan"))()
 
 		build, err := buildPkg.DefaultBuild()
 		if err != nil {
@@ -142,7 +142,7 @@ test-key = "test-value"
 			t.Errorf("Build.Success() = %d, expected 0", actual)
 		}
 
-		internal.BeFileLike(t, filepath.Join(root, "alpha"), 0644, `version = "test-version"
+		internal.BeFileLike(t, filepath.Join(root, "plan", "alpha"), 0644, `version = "test-version"
 `)
 	})
 
@@ -159,7 +159,7 @@ test-key = "test-value"
 			t.Fatal(err)
 		}
 
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), root, root, root, root)()
+		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "layers"), filepath.Join(root, "platform"), filepath.Join(root, "plan"))()
 
 		build, err := buildPkg.DefaultBuild()
 		if err != nil {

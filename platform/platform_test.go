@@ -34,28 +34,13 @@ func TestPlatform(t *testing.T) {
 
 func testPlatform(t *testing.T, when spec.G, it spec.S) {
 
-	it("extracts root from os.Args[1]", func() {
-		root := internal.ScratchDir(t, "platform")
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"))()
-
-		platform, err := platformPkg.DefaultPlatform(logger.Logger{})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if platform.Root != filepath.Join(root, "platform") {
-			t.Errorf("Platform.Root = %s, wanted %s", platform.Root, root)
-		}
-	})
-
 	it("enumerates platform environment variables", func() {
 		root := internal.ScratchDir(t, "platform")
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"))()
 		if err := internal.WriteToFile(strings.NewReader("test-value"), filepath.Join(root, "platform", "env", "TEST_KEY"), 0644); err != nil {
 			t.Fatal(err)
 		}
 
-		platform, err := platformPkg.DefaultPlatform(logger.Logger{})
+		platform, err := platformPkg.DefaultPlatform(filepath.Join(root, "platform"), logger.Logger{})
 		if err != nil {
 			t.Fatal(err)
 		}

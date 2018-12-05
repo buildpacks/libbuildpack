@@ -22,7 +22,6 @@ import (
 
 	"github.com/buildpack/libbuildpack/internal"
 	layersPkg "github.com/buildpack/libbuildpack/layers"
-	"github.com/buildpack/libbuildpack/logger"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -32,20 +31,6 @@ func TestLayers(t *testing.T) {
 }
 
 func testLayers(t *testing.T, when spec.G, it spec.S) {
-
-	it("extracts root from os.Args[3]", func() {
-		root := internal.ScratchDir(t, "layers")
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plans"), filepath.Join(root, "layers"))()
-
-		layers, err := layersPkg.DefaultLayers(logger.Logger{})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if layers.Root != filepath.Join(root, "layers") {
-			t.Errorf("Laters.Root = %s, expected = launch-root", layers.Root)
-		}
-	})
 
 	it("creates a layer with root based on its name", func() {
 		root := internal.ScratchDir(t, "layers")

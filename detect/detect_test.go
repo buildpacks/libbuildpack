@@ -73,7 +73,7 @@ test-key = "test-value"
 			t.Fatal(err)
 		}
 
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), root, root)()
+		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan"))()
 
 		detect, err := detectPkg.DefaultDetect()
 		if err != nil {
@@ -118,7 +118,7 @@ test-key = "test-value"
 			t.Fatal(err)
 		}
 
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), root, root)()
+		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan"))()
 
 		detect, err := detectPkg.DefaultDetect()
 		if err != nil {
@@ -141,7 +141,7 @@ test-key = "test-value"
 			t.Fatal(err)
 		}
 
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), root, root)()
+		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan"))()
 
 		detect, err := detectPkg.DefaultDetect()
 		if err != nil {
@@ -164,7 +164,7 @@ test-key = "test-value"
 			t.Fatal(err)
 		}
 
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), root, root)()
+		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan"))()
 
 		detect, err := detectPkg.DefaultDetect()
 		if err != nil {
@@ -182,7 +182,7 @@ test-key = "test-value"
 			t.Errorf("Detect.Pass() = %d, expected 0", actual)
 		}
 
-		internal.BeFileLike(t, filepath.Join(root, "alpha"), 0644, `version = "test-version"
+		internal.BeFileLike(t, filepath.Join(root, "plan", "alpha"), 0644, `version = "test-version"
 `)
 	})
 }

@@ -22,6 +22,7 @@ import (
 	applicationPkg "github.com/buildpack/libbuildpack/application"
 	buildpackPkg "github.com/buildpack/libbuildpack/buildpack"
 	buildplanPkg "github.com/buildpack/libbuildpack/buildplan"
+	"github.com/buildpack/libbuildpack/internal"
 	layersPkg "github.com/buildpack/libbuildpack/layers"
 	loggerPkg "github.com/buildpack/libbuildpack/logger"
 	platformPkg "github.com/buildpack/libbuildpack/platform"
@@ -101,14 +102,19 @@ func DefaultBuild() (Build, error) {
 		return Build{}, err
 	}
 
-	buildPlanWriter := buildplanPkg.DefaultWriter
+	buildPlanWriter := buildplanPkg.DefaultWriter(3)
 
-	layers, err := layersPkg.DefaultLayers(logger)
+	layersRoot, err := internal.OsArgs(1)
 	if err != nil {
 		return Build{}, err
 	}
+	layers := layersPkg.Layers{Root: layersRoot, Logger: logger}
 
-	platform, err := platformPkg.DefaultPlatform(logger)
+	platformRoot, err := internal.OsArgs(2)
+	if err != nil {
+		return Build{}, err
+	}
+	platform, err := platformPkg.DefaultPlatform(platformRoot, logger)
 	if err != nil {
 		return Build{}, err
 	}
