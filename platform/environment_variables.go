@@ -16,27 +16,67 @@
 
 package platform
 
-// EnvironmentVariables is a collection of EnvironmentVariable instances.
-type EnvironmentVariables []EnvironmentVariable
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 
-// Contains returns whether an EnvironmentVariables contains a given variable by name.
-func (e EnvironmentVariables) Contains(name string) bool {
-	for _, ev := range e {
-		if ev.Name == name {
-			return true
-		}
-	}
+	"github.com/buildpack/libbuildpack/logger"
+)
 
-	return false
-}
+// EnvironmentVariables is a collection of environment variables provided by the Platform.
+type EnvironmentVariables map[string]string
 
 // SetAll sets all of the environment variable content in the current process environment.
 func (e EnvironmentVariables) SetAll() error {
-	for _, ev := range e {
-		if err := ev.Set(); err != nil {
+	for key, value := range e {
+		if err := os.Setenv(key, value); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+// String makes EnvironmentVariables satisfy the Stringer interface.
+func (e EnvironmentVariables) String() string {
+	var entries []string
+
+	for k, v := range e {
+		entries = append(entries, fmt.Sprintf("%s: %s", k, v))
+	}
+
+	return fmt.Sprintf("EnvironmentVariables{ %s }", strings.Join(entries, ", "))
+}
+
+func environmentVariables(root string, logger logger.Logger) (EnvironmentVariables, error) {
+	files, err := filepath.Glob(filepath.Join(root, "env", "*"))
+	if err != nil {
+		return nil, err
+	}
+
+	e := make(EnvironmentVariables)
+
+	for _, file := range files {
+		value, err := value(file)
+		if err != nil {
+			return nil, err
+		}
+
+		e[filepath.Base(file)] = value
+	}
+
+	logger.Debug("Platform environment variables: %s", e)
+	return e, nil
+}
+
+func value(filename string) (string, error) {
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return "", err
+	}
+
+	return string(b), nil
 }

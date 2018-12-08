@@ -18,45 +18,36 @@ package build_test
 
 import (
 	"path/filepath"
-	"reflect"
-	"strings"
 	"testing"
 
-	"github.com/buildpack/libbuildpack/application"
-	buildPkg "github.com/buildpack/libbuildpack/build"
-	"github.com/buildpack/libbuildpack/buildpack"
+	"github.com/buildpack/libbuildpack/build"
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/buildpack/libbuildpack/internal"
-	"github.com/buildpack/libbuildpack/layers"
-	"github.com/buildpack/libbuildpack/logger"
-	"github.com/buildpack/libbuildpack/platform"
+	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
 
 func TestBuild(t *testing.T) {
-	spec.Run(t, "Build", testBuild, spec.Report(report.Terminal{}))
-}
+	spec.Run(t, "Build", func(t *testing.T, _ spec.G, it spec.S) {
 
-func testBuild(t *testing.T, when spec.G, it spec.S) {
+		g := NewGomegaWithT(t)
 
-	it("contains default values", func() {
-		root := internal.ScratchDir(t, "build")
-		defer internal.ReplaceWorkingDirectory(t, root)()
-		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+		var root string
 
-		console, d := internal.ReplaceConsole(t)
-		defer d()
+		it.Before(func() {
+			root = internal.ScratchDir(t, "detect")
+		})
 
-		console.In(t, `[alpha]
-  version = "alpha-version"
-  name = "alpha-name"
+		it("contains default values", func() {
+			defer internal.ReplaceWorkingDirectory(t, root)()
+			defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+			defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "layers"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
 
-[bravo]
-  name = "bravo-name"
-`)
+			console, d := internal.ReplaceConsole(t)
+			defer d()
 
-		in := strings.NewReader(`[buildpack]
+			internal.WriteTestFile(t, filepath.Join(root, "buildpack.toml"), `[buildpack]
 id = "buildpack-id"
 name = "buildpack-name"
 version = "buildpack-version"
@@ -70,106 +61,65 @@ run-images = ["run-image-tag"]
 test-key = "test-value"
 `)
 
-		if err := internal.WriteToFile(in, filepath.Join(root, "buildpack.toml"), 0644); err != nil {
-			t.Fatal(err)
-		}
+			console.In(t, `[alpha]
+  version = "alpha-version"
+  name = "alpha-name"
 
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "layers"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
-
-		build, err := buildPkg.DefaultBuild()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if reflect.DeepEqual(build.Application, application.Application{}) {
-			t.Errorf("build.Application should not be empty")
-		}
-
-		if reflect.DeepEqual(build.Buildpack, buildpack.Buildpack{}) {
-			t.Errorf("build.Buildpack should not be empty")
-		}
-
-		if reflect.DeepEqual(build.BuildPlan, buildplan.BuildPlan{}) {
-			t.Errorf("build.BuildPlan should not be empty")
-		}
-
-		if reflect.DeepEqual(build.Layers, layers.Layers{}) {
-			t.Errorf("build.Layers should not be empty")
-		}
-
-		if reflect.DeepEqual(build.Logger, logger.Logger{}) {
-			t.Errorf("build.Logger should not be empty")
-		}
-
-		if reflect.DeepEqual(build.Platform, platform.Platform{}) {
-			t.Errorf("build.Platform should not be empty")
-		}
-
-		if reflect.DeepEqual(build.Stack, "") {
-			t.Errorf("build.Stack should not be empty")
-		}
-	})
-
-	it("returns 0 when successful", func() {
-		root := internal.ScratchDir(t, "build")
-		defer internal.ReplaceWorkingDirectory(t, root)()
-		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
-
-		c, d := internal.ReplaceConsole(t)
-		defer d()
-		c.In(t, "")
-
-		if err := internal.WriteToFile(strings.NewReader(""), filepath.Join(root, "buildpack.toml"), 0644); err != nil {
-			t.Fatal(err)
-		}
-
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "layers"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
-
-		build, err := buildPkg.DefaultBuild()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		actual, err := build.Success(buildplan.BuildPlan{
-			"alpha": buildplan.Dependency{Version: "test-version"},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if actual != buildPkg.SuccessStatusCode {
-			t.Errorf("Build.Success() = %d, expected 0", actual)
-		}
-
-		internal.BeFileLike(t, filepath.Join(root, "plan.toml"), 0644, `[alpha]
-  version = "test-version"
+[bravo]
+  name = "bravo-name"
 `)
-	})
 
-	it("returns code when failing", func() {
-		root := internal.ScratchDir(t, "build")
-		defer internal.ReplaceWorkingDirectory(t, root)()
-		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+			b, err := build.DefaultBuild()
+			g.Expect(err).NotTo(HaveOccurred())
 
-		c, d := internal.ReplaceConsole(t)
-		defer d()
-		c.In(t, "")
+			g.Expect(b.Application).NotTo(BeZero())
+			g.Expect(b.Buildpack).NotTo(BeZero())
+			g.Expect(b.BuildPlan).NotTo(BeZero())
+			g.Expect(b.BuildPlanWriter).NotTo(BeZero())
+			g.Expect(b.Layers).NotTo(BeZero())
+			g.Expect(b.Logger).NotTo(BeZero())
+			g.Expect(b.Platform).NotTo(BeZero())
+			g.Expect(b.Stack).NotTo(BeZero())
+		})
 
-		if err := internal.WriteToFile(strings.NewReader(""), filepath.Join(root, "buildpack.toml"), 0644); err != nil {
-			t.Fatal(err)
-		}
+		it("returns 0 when successful", func() {
+			defer internal.ReplaceWorkingDirectory(t, root)()
+			defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+			defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "layers"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
 
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "layers"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
+			console, d := internal.ReplaceConsole(t)
+			defer d()
 
-		build, err := buildPkg.DefaultBuild()
-		if err != nil {
-			t.Fatal(err)
-		}
+			internal.TouchTestFile(t, root, "buildpack.toml")
+			console.In(t, "")
 
-		actual := build.Failure(42)
+			b, err := build.DefaultBuild()
+			g.Expect(err).NotTo(HaveOccurred())
 
-		if actual != 42 {
-			t.Errorf("Build.Failure() = %d, expected 42", actual)
-		}
-	})
+			g.Expect(b.Success(buildplan.BuildPlan{
+				"alpha": buildplan.Dependency{Version: "test-version"},
+			})).To(Equal(build.SuccessStatusCode))
+
+			g.Expect(filepath.Join(root, "plan.toml")).To(internal.HaveContent(`[alpha]
+  version = "test-version"
+`))
+		})
+
+		it("returns code when failing", func() {
+			defer internal.ReplaceWorkingDirectory(t, root)()
+			defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+			defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "layers"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
+
+			console, d := internal.ReplaceConsole(t)
+			defer d()
+
+			internal.TouchTestFile(t, root, "buildpack.toml")
+			console.In(t, "")
+
+			b, err := build.DefaultBuild()
+			g.Expect(err).NotTo(HaveOccurred())
+
+			g.Expect(b.Failure(42)).To(Equal(42))
+		})
+	}, spec.Report(report.Terminal{}))
 }

@@ -18,7 +18,6 @@ package platform
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/logger"
@@ -29,16 +28,16 @@ type Platform struct {
 	// Root is the path to the root directory for the platform contributions.
 	Root string
 
-	// Envs is the collection of environment variables contributed by the platform.
-	Envs EnvironmentVariables
+	// EnvironmentVariables is the collection of environment variables contributed by the platform.
+	EnvironmentVariables EnvironmentVariables
 
-	// Logger is used to write debug and info to the console.
-	Logger logger.Logger
+	logger logger.Logger
 }
 
 // String makes Platform satisfy the Stringer interface.
 func (p Platform) String() string {
-	return fmt.Sprintf("Platform{ Root: %s, Envs: %s, Logger: %s }", p.Root, p.Envs, p.Logger)
+	return fmt.Sprintf("Platform{ Root: %s, EnvironmentVariables: %s, logger: %s }",
+		p.Root, p.EnvironmentVariables, p.logger)
 }
 
 // DefaultPlatform creates a new instance of Platform.
@@ -51,31 +50,10 @@ func DefaultPlatform(root string, logger logger.Logger) (Platform, error) {
 		logger.Debug("Platform contents: %s", contents)
 	}
 
-	envs, err := enumerateEnvs(root, logger)
+	environmentVariables, err := environmentVariables(root, logger)
 	if err != nil {
 		return Platform{}, err
 	}
 
-	return Platform{
-		Root:   root,
-		Envs:   envs,
-		Logger: logger,
-	}, err
-}
-
-func enumerateEnvs(root string, logger logger.Logger) (EnvironmentVariables, error) {
-	files, err := filepath.Glob(filepath.Join(root, "env", "*"))
-	if err != nil {
-		return nil, err
-	}
-
-	var e EnvironmentVariables
-
-	for _, file := range files {
-		e = append(e, EnvironmentVariable{file, filepath.Base(file), logger})
-	}
-
-	logger.Debug("Platform environment variables: %s", e)
-
-	return e, nil
+	return Platform{root, environmentVariables, logger}, err
 }

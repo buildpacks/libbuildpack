@@ -14,25 +14,29 @@
  * limitations under the License.
  */
 
-package buildplan
+package internal
 
 import (
-	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
 )
 
-// Dependency represents a dependency in a build.
-type Dependency struct {
-	// Version is the optional dependency version.
-	Version string `toml:"version"`
+// DirectoryContents walks the tree of files below a given root and returns their relative paths.
+func DirectoryContents(root string) ([]string, error) {
+	var contents []string
 
-	// Metadata is additional metadata attached to the dependency.
-	Metadata Metadata `toml:"metadata"`
+	if err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		rel, err := filepath.Rel(root, path)
+		if err != nil {
+			return err
+		}
+		contents = append(contents, rel)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	sort.Strings(contents)
+	return contents, nil
 }
-
-// String makes Dependency satisfy the Stringer interface.
-func (d Dependency) String() string {
-	return fmt.Sprintf("Dependency{ Version: %s, Metadata: %s }", d.Version, d.Metadata)
-}
-
-// Metadata is additional metadata attached to a dependency.
-type Metadata = map[string]interface{}

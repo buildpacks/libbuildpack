@@ -14,25 +14,22 @@
  * limitations under the License.
  */
 
-package buildplan
+package internal
 
 import (
-	"fmt"
+	"os"
 )
 
-// Dependency represents a dependency in a build.
-type Dependency struct {
-	// Version is the optional dependency version.
-	Version string `toml:"version"`
+// FileExists returns whether a file exists taking into account various error cases.
+func FileExists(file string) (bool, error) {
+	_, err := os.Stat(file)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
 
-	// Metadata is additional metadata attached to the dependency.
-	Metadata Metadata `toml:"metadata"`
+		return false, err
+	}
+
+	return true, nil
 }
-
-// String makes Dependency satisfy the Stringer interface.
-func (d Dependency) String() string {
-	return fmt.Sprintf("Dependency{ Version: %s, Metadata: %s }", d.Version, d.Metadata)
-}
-
-// Metadata is additional metadata attached to a dependency.
-type Metadata = map[string]interface{}

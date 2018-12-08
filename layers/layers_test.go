@@ -21,52 +21,45 @@ import (
 	"testing"
 
 	"github.com/buildpack/libbuildpack/internal"
-	layersPkg "github.com/buildpack/libbuildpack/layers"
+	"github.com/buildpack/libbuildpack/layers"
+	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
 
 func TestLayers(t *testing.T) {
-	spec.Run(t, "Layers", testLayers, spec.Report(report.Terminal{}))
-}
+	spec.Run(t, "Layers", func(t *testing.T, _ spec.G, it spec.S) {
 
-func testLayers(t *testing.T, when spec.G, it spec.S) {
+		g := NewGomegaWithT(t)
 
-	it("creates a layer with root based on its name", func() {
-		root := internal.ScratchDir(t, "layers")
+		var root string
 
-		layers := layersPkg.Layers{Root: root}
-		layer := layers.Layer("test-layer")
+		it.Before(func() {
+			root = internal.ScratchDir(t, "layers")
+		})
 
-		expected := filepath.Join(root, "test-layer")
+		it("creates a layer with root based on its name", func() {
+			layer := layers.Layers{Root: root}.Layer("test-layer")
 
-		if layer.Root != expected {
-			t.Errorf("Layer.Root = %s, expected %s", layer.Root, root)
-		}
-	})
+			g.Expect(layer.Root).To(Equal(filepath.Join(root, "test-layer")))
+		})
 
-	it("writes launch metadata", func() {
-		root := internal.ScratchDir(t, "layers")
-		layers := layersPkg.Layers{Root: root}
+		it("writes launch metadata", func() {
+			g.Expect(layers.Layers{Root: root}.WriteMetadata(layers.Metadata{
+				Processes: layers.Processes{
+					layers.Process{Type: "web", Command: "command-1"},
+					layers.Process{Type: "task", Command: "command-2"},
+				},
+			})).To(Succeed())
 
-		lm := layersPkg.Metadata{
-			Processes: layersPkg.Processes{
-				layersPkg.Process{Type: "web", Command: "command-1"},
-				layersPkg.Process{Type: "task", Command: "command-2"},
-			},
-		}
-
-		if err := layers.WriteMetadata(lm); err != nil {
-			t.Fatal(err)
-		}
-
-		internal.BeFileLike(t, filepath.Join(root, "launch.toml"), 0644, `[[processes]]
+			g.Expect(filepath.Join(root, "launch.toml")).To(internal.HaveContent(`[[processes]]
   type = "web"
   command = "command-1"
 
 [[processes]]
   type = "task"
   command = "command-2"
-`)
-	})
+`))
+		})
+	}, spec.Report(report.Terminal{}))
 }

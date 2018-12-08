@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"testing"
 )
 
@@ -83,52 +82,6 @@ func (c Console) Out(t *testing.T) string {
 	return string(bytes)
 }
 
-// ProtectEnv protects a collection of environment variables.  Returns a function for use with defer in order to reset
-// the previous values.
-//
-// defer ProtectEnv(t, "alpha")()
-func ProtectEnv(t *testing.T, keys ...string) func() {
-	t.Helper()
-
-	type state struct {
-		value string
-		ok    bool
-	}
-
-	previous := make(map[string]state)
-	for _, key := range keys {
-		value, ok := os.LookupEnv(key)
-		previous[key] = state{value, ok}
-	}
-
-	return func() {
-		for k, v := range previous {
-			if v.ok {
-				if err := os.Setenv(k, v.value); err != nil {
-					t.Fatal(err)
-				}
-			} else {
-				if err := os.Unsetenv(k); err != nil {
-					t.Fatal(err)
-				}
-			}
-		}
-	}
-}
-
-// ReplaceArgs replaces the current command line arguments (os.Args) with a new collection of values.  Returns a
-// function suitable for use with defer in order to reset the previous values
-//
-//  defer ReplaceArgs(t, "alpha")()
-func ReplaceArgs(t *testing.T, args ...string) func() {
-	t.Helper()
-
-	previous := os.Args
-	os.Args = args
-
-	return func() { os.Args = previous }
-}
-
 // ReplaceConsole replaces the console files (os.Stderr, os.Stdin, os.Stdout).  Returns a function for use with defer in
 // order to reset the previous values
 //
@@ -166,69 +119,4 @@ func ReplaceConsole(t *testing.T) (Console, func()) {
 		os.Stdin = inPrevious
 		os.Stdout = outPrevious
 	}
-}
-
-// ReplaceEnv replaces an environment variable.  Returns a function for use with defer in order to reset the previous
-// value.
-//
-// defer ReplaceEnv(t, "alpha", "bravo")()
-func ReplaceEnv(t *testing.T, key string, value string) func() {
-	t.Helper()
-
-	previous, ok := os.LookupEnv(key)
-	if err := os.Setenv(key, value); err != nil {
-		t.Fatal(err)
-	}
-
-	return func() {
-		if ok {
-			if err := os.Setenv(key, previous); err != nil {
-				t.Fatal(err)
-			}
-		} else {
-			if err := os.Unsetenv(key); err != nil {
-				t.Fatal(err)
-			}
-		}
-	}
-}
-
-// ReplaceWorkingDirectory replaces the current working directory (os.Getwd()) with a new value.  Returns a function for
-// use with defer in order to reset the previous value
-//
-// defer ReplaceWorkingDirectory(t, "alpha")()
-func ReplaceWorkingDirectory(t *testing.T, dir string) func() {
-	t.Helper()
-
-	previous, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if err = os.Chdir(dir); err != nil {
-		t.Fatal(err)
-	}
-
-	return func() {
-		if err := os.Chdir(previous); err != nil {
-			t.Fatal(err)
-		}
-	}
-}
-
-// ScratchDir returns a safe scratch directory for tests to modify.
-func ScratchDir(t *testing.T, prefix string) string {
-	t.Helper()
-
-	tmp, err := ioutil.TempDir("", prefix)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	abs, err := filepath.EvalSymlinks(tmp)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return abs
 }

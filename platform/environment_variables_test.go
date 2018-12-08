@@ -19,63 +19,35 @@ package platform_test
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/buildpack/libbuildpack/internal"
-	platformPkg "github.com/buildpack/libbuildpack/platform"
+	"github.com/buildpack/libbuildpack/logger"
+	"github.com/buildpack/libbuildpack/platform"
+	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
 
 func TestEnvironmentVariables(t *testing.T) {
-	spec.Run(t, "EnvironmentVariables", testEnvironmentVariables, spec.Report(report.Terminal{}))
-}
+	spec.Run(t, "EnvironmentVariables", func(t *testing.T, _ spec.G, it spec.S) {
 
-func testEnvironmentVariables(t *testing.T, when spec.G, it spec.S) {
+		g := NewGomegaWithT(t)
 
-	it("reports environment variable containment", func() {
-		envs := platformPkg.EnvironmentVariables{
-			platformPkg.EnvironmentVariable{Name: "TEST_KEY"},
-		}
+		it("sets all platform environment variables", func() {
+			root := internal.ScratchDir(t, "platform")
+			defer internal.ProtectEnv(t, "TEST_KEY_1", "TEST_KEY_2")()
 
-		contains := envs.Contains("TEST_KEY")
-		if !contains {
-			t.Errorf("Platform.Envs.Contains(\"TEST_KEY\") = %t, expected true", contains)
-		}
+			internal.WriteTestFile(t, filepath.Join(root, "env", "TEST_KEY_1"), "test-value-1")
+			internal.WriteTestFile(t, filepath.Join(root, "env", "TEST_KEY_2"), "test-value-2")
 
-		contains = envs.Contains("TEST_KEY_2")
-		if contains {
-			t.Errorf("Platform.Envs.Contains(\"TEST_KEY_2\") = %t, expected false", contains)
-		}
-	})
+			platform, err := platform.DefaultPlatform(root, logger.Logger{})
+			g.Expect(err).NotTo(HaveOccurred())
 
-	it("sets all platform environment variables", func() {
-		root := internal.ScratchDir(t, "platform")
-		defer internal.ProtectEnv(t, "TEST_KEY_1", "TEST_KEY_2")()
-		if err := internal.WriteToFile(strings.NewReader("test-value-1"), filepath.Join(root, "env", "TEST_KEY_1"), 0644); err != nil {
-			t.Fatal(err)
-		}
-		if err := internal.WriteToFile(strings.NewReader("test-value-2"), filepath.Join(root, "env", "TEST_KEY_2"), 0644); err != nil {
-			t.Fatal(err)
-		}
+			g.Expect(platform.EnvironmentVariables.SetAll()).To(Succeed())
+			g.Expect(os.Getenv("TEST_KEY_1")).To(Equal("test-value-1"))
+			g.Expect(os.Getenv("TEST_KEY_2")).To(Equal("test-value-2"))
+		})
 
-		envs := platformPkg.EnvironmentVariables{
-			platformPkg.EnvironmentVariable{File: filepath.Join(root, "env", "TEST_KEY_1"), Name: "TEST_KEY_1"},
-			platformPkg.EnvironmentVariable{File: filepath.Join(root, "env", "TEST_KEY_2"), Name: "TEST_KEY_2"},
-		}
-
-		if err := envs.SetAll(); err != nil {
-			t.Fatal(err)
-		}
-
-		if os.Getenv("TEST_KEY_1") != "test-value-1" {
-			t.Errorf("os.GetEnv(\"TEST_KEY_1\") = %s, expected test-value-1", os.Getenv("TEST_KEY_1"))
-		}
-
-		if os.Getenv("TEST_KEY_2") != "test-value-2" {
-			t.Errorf("os.GetEnv(\"TEST_KEY_2\") = %s, expected test-value-2", os.Getenv("TEST_KEY_2"))
-		}
-	})
-
+	}, spec.Report(report.Terminal{}))
 }

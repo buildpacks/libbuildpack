@@ -14,25 +14,19 @@
  * limitations under the License.
  */
 
-package buildplan
+package internal
 
 import (
 	"fmt"
+	"os"
 )
 
-// Dependency represents a dependency in a build.
-type Dependency struct {
-	// Version is the optional dependency version.
-	Version string `toml:"version"`
+// Argument returns the specified argument from os.Args.  It returns an error if there are not enough arguments to
+// satisfy the request.
+func Argument(index int) (string, error) {
+	if len(os.Args) < index+1 {
+		return "", fmt.Errorf("incorrect number of command line arguments")
+	}
 
-	// Metadata is additional metadata attached to the dependency.
-	Metadata Metadata `toml:"metadata"`
+	return os.Args[index], nil
 }
-
-// String makes Dependency satisfy the Stringer interface.
-func (d Dependency) String() string {
-	return fmt.Sprintf("Dependency{ Version: %s, Metadata: %s }", d.Version, d.Metadata)
-}
-
-// Metadata is additional metadata attached to a dependency.
-type Metadata = map[string]interface{}

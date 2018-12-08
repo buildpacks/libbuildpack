@@ -18,237 +18,163 @@ package layers_test
 
 import (
 	"path/filepath"
-	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/buildpack/libbuildpack/internal"
-	layersPkg "github.com/buildpack/libbuildpack/layers"
+	"github.com/buildpack/libbuildpack/layers"
+	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
 
 func TestLayer(t *testing.T) {
-	spec.Run(t, "Layer", testLayer, spec.Report(report.Terminal{}))
-}
+	spec.Run(t, "Layer", func(t *testing.T, when spec.G, it spec.S) {
 
-func testLayer(t *testing.T, when spec.G, it spec.S) {
+		g := NewGomegaWithT(t)
 
-	when("layer content metadata", func() {
+		when("layer content metadata", func() {
 
-		type metadata struct {
-			Alpha string
-			Bravo int
-		}
+			type metadata struct {
+				Alpha string
+				Bravo int
+			}
 
-		it("reads layer content metadata", func() {
-			root := internal.ScratchDir(t, "layer")
-			layers := layersPkg.Layers{Root: root}
-			layer := layers.Layer("test-layer")
+			var (
+				root  string
+				layer layers.Layer
+			)
 
-			if err := internal.WriteToFile(strings.NewReader(`[metadata]
+			it.Before(func() {
+				root = internal.ScratchDir(t, "layer")
+				layer = layers.Layers{Root: root}.Layer("test-layer")
+			})
+
+			it("reads layer content metadata", func() {
+				internal.WriteTestFile(t, filepath.Join(root, "test-layer.toml"), `[metadata]
 Alpha = "test-value"
 Bravo = 1
-`), filepath.Join(root, "test-layer.toml"), 0644); err != nil {
-				t.Fatal(err)
-			}
+`)
 
-			var actual metadata
-			if err := layer.ReadMetadata(&actual); err != nil {
-				t.Fatal(err)
-			}
+				var actual metadata
+				g.Expect(layer.ReadMetadata(&actual)).To(Succeed())
 
-			expected := metadata{"test-value", 1}
+				g.Expect(actual).To(Equal(metadata{"test-value", 1}))
+			})
 
-			if !reflect.DeepEqual(actual, expected) {
-				t.Errorf("metadata = %v, wanted %v", actual, expected)
-			}
-		})
+			it("does not read layer content metadata if it does not exist", func() {
+				var actual metadata
+				g.Expect(layer.ReadMetadata(&actual)).To(Succeed())
 
-		it("does not read layer content metadata if it does not exist", func() {
-			root := internal.ScratchDir(t, "layer")
-			layers := layersPkg.Layers{Root: root}
-			layer := layers.Layer("test-layer")
+				g.Expect(actual).To(Equal(metadata{}))
+			})
 
-			var actual metadata
-			if err := layer.ReadMetadata(&actual); err != nil {
-				t.Fatal(err)
-			}
-
-			expected := metadata{}
-
-			if !reflect.DeepEqual(actual, expected) {
-				t.Errorf("metadata = %v, wanted %v", actual, expected)
-			}
-		})
-
-		it("remove layer content metadata", func() {
-			root := internal.ScratchDir(t, "layer")
-			layers := layersPkg.Layers{Root: root}
-			layer := layers.Layer("test-layer")
-
-			metadata := filepath.Join(root, "test-layer.toml")
-			if err := internal.WriteToFile(strings.NewReader(`Alpha = "test-value"
+			it("remove layer content metadata", func() {
+				internal.WriteTestFile(t, filepath.Join(root, "test-layer.toml"), `[metadata]
+Alpha = "test-value"
 Bravo = 1
-`), metadata, 0644); err != nil {
-				t.Fatal(err)
-			}
+`)
 
-			if err := layer.RemoveMetadata(); err != nil {
-				t.Fatal(err)
-			}
+				g.Expect(layer.RemoveMetadata()).To(Succeed())
+				g.Expect("").NotTo(BeAnExistingFile())
+			})
 
-			exists, err := internal.FileExists(metadata)
-			if err != nil {
-				t.Fatal(err)
-			}
+			it("writes layer content metadata", func() {
+				g.Expect(layer.WriteMetadata(metadata{"test-value", 1},
+					layers.Build, layers.Cache, layers.Launch)).To(Succeed())
 
-			if exists {
-				t.Errorf("%s exists, expected not to", metadata)
-			}
-		})
-
-		it("writes layer content metadata", func() {
-			root := internal.ScratchDir(t, "layer")
-			layers := layersPkg.Layers{Root: root}
-			layer := layers.Layer("test-layer")
-
-			if err := layer.WriteMetadata(metadata{"test-value", 1}, layersPkg.Build, layersPkg.Cache, layersPkg.Launch); err != nil {
-				t.Fatal(err)
-			}
-
-			internal.BeFileLike(t, filepath.Join(root, "test-layer.toml"), 0644, `build = true
+				g.Expect(filepath.Join(root, "test-layer.toml")).To(internal.HaveContent(`build = true
 cache = true
 launch = true
 
 [metadata]
   Alpha = "test-value"
   Bravo = 1
-`)
-		})
-
-		it("writes a profile file", func() {
-			root := internal.ScratchDir(t, "layer")
-			layer := layersPkg.Layer{Root: root}
-
-			if err := layer.WriteProfile("test-name", "%s-%d", "test-string", 1); err != nil {
-				t.Fatal(err)
-			}
-
-			internal.BeFileLike(t, filepath.Join(root, "profile.d", "test-name"), 0644, "test-string-1")
-		})
-	})
-
-	when("environment files", func() {
-
-		when("build", func() {
-
-			it("writes an append environment file", func() {
-				root := internal.ScratchDir(t, "cache")
-				layer := layersPkg.Layer{Root: root}
-
-				if err := layer.AppendBuildEnv("TEST_NAME", "%s-%d", "test-string", 1); err != nil {
-					t.Fatal(err)
-				}
-
-				internal.BeFileLike(t, filepath.Join(root, "env.build", "TEST_NAME.append"), 0644, "test-string-1")
+`))
 			})
 
-			it("writes an append path environment file", func() {
-				root := internal.ScratchDir(t, "cache")
-				layer := layersPkg.Layer{Root: root}
+			it("writes a profile file", func() {
+				g.Expect(layer.WriteProfile("test-name", "%s-%d", "test-string", 1)).To(Succeed())
 
-				if err := layer.AppendPathBuildEnv("TEST_NAME", "%s-%d", "test-string", 1); err != nil {
-					t.Fatal(err)
-				}
-
-				internal.BeFileLike(t, filepath.Join(root, "env.build", "TEST_NAME"), 0644, "test-string-1")
-			})
-
-			it("writes an override environment file", func() {
-				root := internal.ScratchDir(t, "cache")
-				layer := layersPkg.Layer{Root: root}
-
-				if err := layer.OverrideBuildEnv("TEST_NAME", "%s-%d", "test-string", 1); err != nil {
-					t.Fatal(err)
-				}
-
-				internal.BeFileLike(t, filepath.Join(root, "env.build", "TEST_NAME.override"), 0644, "test-string-1")
+				g.Expect(filepath.Join(root, "test-layer", "profile.d", "test-name")).To(internal.HaveContent("test-string-1"))
 			})
 		})
 
-		when("launch", func() {
+		when("environment files", func() {
 
-			it("writes an append environment file", func() {
-				root := internal.ScratchDir(t, "cache")
-				layer := layersPkg.Layer{Root: root}
+			var (
+				root  string
+				layer layers.Layer
+			)
 
-				if err := layer.AppendLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1); err != nil {
-					t.Fatal(err)
-				}
-
-				internal.BeFileLike(t, filepath.Join(root, "env.launch", "TEST_NAME.append"), 0644, "test-string-1")
+			it.Before(func() {
+				root = internal.ScratchDir(t, "layer")
+				layer = layers.Layer{Root: root}
 			})
 
-			it("writes an append path environment file", func() {
-				root := internal.ScratchDir(t, "cache")
-				layer := layersPkg.Layer{Root: root}
+			when("build", func() {
 
-				if err := layer.AppendPathLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1); err != nil {
-					t.Fatal(err)
-				}
+				it("writes an append environment file", func() {
+					g.Expect(layer.AppendBuildEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
 
-				internal.BeFileLike(t, filepath.Join(root, "env.launch", "TEST_NAME"), 0644, "test-string-1")
+					g.Expect(filepath.Join(root, "env.build", "TEST_NAME.append")).To(internal.HaveContent("test-string-1"))
+				})
+
+				it("writes an append path environment file", func() {
+					g.Expect(layer.AppendPathBuildEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+
+					g.Expect(filepath.Join(root, "env.build", "TEST_NAME")).To(internal.HaveContent("test-string-1"))
+				})
+
+				it("writes an override environment file", func() {
+					g.Expect(layer.OverrideBuildEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+
+					g.Expect(filepath.Join(root, "env.build", "TEST_NAME.override")).To(internal.HaveContent("test-string-1"))
+				})
 			})
 
-			it("writes an override environment file", func() {
-				root := internal.ScratchDir(t, "cache")
-				layer := layersPkg.Layer{Root: root}
+			when("launch", func() {
 
-				if err := layer.OverrideLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1); err != nil {
-					t.Fatal(err)
-				}
+				it("writes an append environment file", func() {
+					g.Expect(layer.AppendLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
 
-				internal.BeFileLike(t, filepath.Join(root, "env.launch", "TEST_NAME.override"), 0644, "test-string-1")
+					g.Expect(filepath.Join(root, "env.launch", "TEST_NAME.append")).To(internal.HaveContent("test-string-1"))
+				})
+
+				it("writes an append path environment file", func() {
+					g.Expect(layer.AppendPathLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+
+					g.Expect(filepath.Join(root, "env.launch", "TEST_NAME")).To(internal.HaveContent("test-string-1"))
+				})
+
+				it("writes an override environment file", func() {
+					g.Expect(layer.OverrideLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+
+					g.Expect(filepath.Join(root, "env.launch", "TEST_NAME.override")).To(internal.HaveContent("test-string-1"))
+				})
+
 			})
 
+			when("shared", func() {
+
+				it("writes an append environment file", func() {
+					g.Expect(layer.AppendSharedEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+
+					g.Expect(filepath.Join(root, "env", "TEST_NAME.append")).To(internal.HaveContent("test-string-1"))
+				})
+
+				it("writes an append path environment file", func() {
+					g.Expect(layer.AppendPathSharedEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+
+					g.Expect(filepath.Join(root, "env", "TEST_NAME")).To(internal.HaveContent("test-string-1"))
+				})
+
+				it("writes an override environment file", func() {
+					g.Expect(layer.OverrideSharedEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+
+					g.Expect(filepath.Join(root, "env", "TEST_NAME.override")).To(internal.HaveContent("test-string-1"))
+				})
+
+			})
 		})
-
-		when("shared", func() {
-
-			it("writes an append environment file", func() {
-				root := internal.ScratchDir(t, "cache")
-				layer := layersPkg.Layer{Root: root}
-
-				if err := layer.AppendSharedEnv("TEST_NAME", "%s-%d", "test-string", 1); err != nil {
-					t.Fatal(err)
-				}
-
-				internal.BeFileLike(t, filepath.Join(root, "env", "TEST_NAME.append"), 0644, "test-string-1")
-			})
-
-			it("writes an append path environment file", func() {
-				root := internal.ScratchDir(t, "cache")
-				layer := layersPkg.Layer{Root: root}
-
-				if err := layer.AppendPathSharedEnv("TEST_NAME", "%s-%d", "test-string", 1); err != nil {
-					t.Fatal(err)
-				}
-
-				internal.BeFileLike(t, filepath.Join(root, "env", "TEST_NAME"), 0644, "test-string-1")
-			})
-
-			it("writes an override environment file", func() {
-				root := internal.ScratchDir(t, "cache")
-				layer := layersPkg.Layer{Root: root}
-
-				if err := layer.OverrideSharedEnv("TEST_NAME", "%s-%d", "test-string", 1); err != nil {
-					t.Fatal(err)
-				}
-
-				internal.BeFileLike(t, filepath.Join(root, "env", "TEST_NAME.override"), 0644, "test-string-1")
-			})
-
-		})
-	})
+	}, spec.Report(report.Terminal{}))
 }
