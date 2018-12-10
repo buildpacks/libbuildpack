@@ -19,39 +19,27 @@ package application_test
 import (
 	"testing"
 
-	applicationPkg "github.com/buildpack/libbuildpack/application"
+	"github.com/buildpack/libbuildpack/application"
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/logger"
+	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
 
 func TestApplication(t *testing.T) {
-	spec.Run(t, "Application", testApplication, spec.Report(report.Terminal{}))
-}
+	spec.Run(t, "Application", func(t *testing.T, _ spec.G, it spec.S) {
 
-func testApplication(t *testing.T, when spec.G, it spec.S) {
+		g := NewGomegaWithT(t)
 
-	it("returns the root of the application", func() {
-		root := internal.ScratchDir(t, "application")
-		application := applicationPkg.Application{Root: root}
+		it("extracts root from working directory", func() {
+			root := internal.ScratchDir(t, "application")
+			defer internal.ReplaceWorkingDirectory(t, root)()
 
-		if application.Root != root {
-			t.Errorf("Application.Root = %s, wanted %s", application.Root, root)
-		}
-	})
+			application, err := application.DefaultApplication(logger.Logger{})
+			g.Expect(err).NotTo(HaveOccurred())
 
-	it("extracts root from working directory", func() {
-		root := internal.ScratchDir(t, "application")
-		defer internal.ReplaceWorkingDirectory(t, root)()
-
-		application, err := applicationPkg.DefaultApplication(logger.Logger{})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if application.Root != root {
-			t.Errorf("Application.Root = %s, wanted %s", application.Root, root)
-		}
-	})
+			g.Expect(application.Root).To(Equal(root))
+		})
+	}, spec.Report(report.Terminal{}))
 }

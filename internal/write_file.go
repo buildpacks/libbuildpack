@@ -14,25 +14,21 @@
  * limitations under the License.
  */
 
-package buildplan
+package internal
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 )
 
-// Dependency represents a dependency in a build.
-type Dependency struct {
-	// Version is the optional dependency version.
-	Version string `toml:"version"`
+// WriteFile writes a file with the given content.  Before writing, it creates all required parent directories for the
+// file.
+func WriteFile(filename string, perm os.FileMode, format string, args ...interface{}) error {
+	if err := os.MkdirAll(filepath.Dir(filename), 0755); err != nil {
+		return err
+	}
 
-	// Metadata is additional metadata attached to the dependency.
-	Metadata Metadata `toml:"metadata"`
+	return ioutil.WriteFile(filename, []byte(fmt.Sprintf(format, args...)), perm)
 }
-
-// String makes Dependency satisfy the Stringer interface.
-func (d Dependency) String() string {
-	return fmt.Sprintf("Dependency{ Version: %s, Metadata: %s }", d.Version, d.Metadata)
-}
-
-// Metadata is additional metadata attached to a dependency.
-type Metadata = map[string]interface{}

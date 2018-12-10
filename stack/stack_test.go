@@ -23,39 +23,28 @@ import (
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/logger"
 	"github.com/buildpack/libbuildpack/stack"
+	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
 
 func TestStack(t *testing.T) {
-	spec.Run(t, "Stack", testStack, spec.Report(report.Terminal{}))
-}
+	spec.Run(t, "Stack", func(t *testing.T, _ spec.G, it spec.S) {
 
-func testStack(t *testing.T, when spec.G, it spec.S) {
+		g := NewGomegaWithT(t)
 
-	it("extracts value from PACK_STACK_ID", func() {
-		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack-name")()
+		it("extracts value from PACK_STACK_ID", func() {
+			defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack-name")()
 
-		actual, err := stack.DefaultStack(logger.Logger{})
-		if err != nil {
-			t.Fatal(err)
-		}
+			g.Expect(stack.DefaultStack(logger.Logger{})).To(Equal(stack.Stack("test-stack-name")))
+		})
 
-		if actual != "test-stack-name" {
-			t.Errorf("DefaultStack = %s, expected test-stack-name", actual)
-		}
-	})
+		it("returns error when PACK_STACK_ID not set", func() {
+			defer internal.ProtectEnv(t, "PACK_STACK_ID")()
+			g.Expect(os.Unsetenv("PACK_STACK_ID")).Should(Succeed())
 
-	it("returns error when PACK_STACK_ID not set", func() {
-		defer internal.ProtectEnv(t, "PACK_STACK_ID")()
-
-		if err := os.Unsetenv("PACK_STACK_ID"); err != nil {
-			t.Fatal(err)
-		}
-
-		_, err := stack.DefaultStack(logger.Logger{})
-		if err.Error() != "PACK_STACK_ID not set" {
-			t.Errorf("DefaultStack = %s, expected PACK_STACK_ID not set", err.Error())
-		}
-	})
+			_, err := stack.DefaultStack(logger.Logger{})
+			g.Expect(err).To(MatchError("PACK_STACK_ID not set"))
+		})
+	}, spec.Report(report.Terminal{}))
 }

@@ -19,13 +19,13 @@ package detect
 import (
 	"fmt"
 
-	applicationPkg "github.com/buildpack/libbuildpack/application"
-	buildpackPkg "github.com/buildpack/libbuildpack/buildpack"
-	buildplanPkg "github.com/buildpack/libbuildpack/buildplan"
+	"github.com/buildpack/libbuildpack/application"
+	"github.com/buildpack/libbuildpack/buildpack"
+	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/buildpack/libbuildpack/internal"
-	loggerPkg "github.com/buildpack/libbuildpack/logger"
-	platformPkg "github.com/buildpack/libbuildpack/platform"
-	stackPkg "github.com/buildpack/libbuildpack/stack"
+	"github.com/buildpack/libbuildpack/logger"
+	"github.com/buildpack/libbuildpack/platform"
+	"github.com/buildpack/libbuildpack/stack"
 )
 
 const (
@@ -39,25 +39,25 @@ const (
 // Detect represents all of the components available to a buildpack at detect time.
 type Detect struct {
 	// Application is the application being processed by the buildpack.
-	Application applicationPkg.Application
+	Application application.Application
 
 	// Buildpack represents the metadata associated with a buildpack.
-	Buildpack buildpackPkg.Buildpack
+	Buildpack buildpack.Buildpack
 
 	// BuildPlan represents dependencies contributed by previous builds.
-	BuildPlan buildplanPkg.BuildPlan
+	BuildPlan buildplan.BuildPlan
 
 	// BuildPlanWriter is the writer used to write the BuildPlan in Pass().
-	BuildPlanWriter buildplanPkg.Writer
+	BuildPlanWriter buildplan.Writer
 
 	// Logger is used to write debug and info to the console.
-	Logger loggerPkg.Logger
+	Logger logger.Logger
 
 	// Platform represents components contributed by the platform to the buildpack.
-	Platform platformPkg.Platform
+	Platform platform.Platform
 
 	// Stack is the stack currently available to the application.
-	Stack string
+	Stack stack.Stack
 }
 
 // Error signals an error during detection by exiting with a specified non-zero, non-100 status code.
@@ -73,7 +73,7 @@ func (d Detect) Fail() int {
 }
 
 // Pass signals a successful detection by exiting with a 0 status code.
-func (d Detect) Pass(buildPlan buildplanPkg.BuildPlan) (int, error) {
+func (d Detect) Pass(buildPlan buildplan.BuildPlan) (int, error) {
 	d.Logger.Debug("Detection passed. Exiting with %d.", PassStatusCode)
 
 	if err := buildPlan.Write(d.BuildPlanWriter); err != nil {
@@ -85,38 +85,38 @@ func (d Detect) Pass(buildPlan buildplanPkg.BuildPlan) (int, error) {
 
 // String makes Detect satisfy the Stringer interface.
 func (d Detect) String() string {
-	return fmt.Sprintf("Detect{ Application: %s, Buildpack: %s, BuildPlan: %s, Logger: %s, Platform: %s, Stack: %s }",
-		d.Application, d.Buildpack, d.BuildPlan, d.Logger, d.Platform, d.Stack)
+	return fmt.Sprintf("Detect{ Application: %s, Buildpack: %s, BuildPlan: %s, BuildPlanWriter: %v, Logger: %s, Platform: %s, Stack: %s }",
+		d.Application, d.Buildpack, d.BuildPlan, d.BuildPlanWriter, d.Logger, d.Platform, d.Stack)
 }
 
 // DefaultDetect creates a new instance of Detect using default values.
 func DefaultDetect() (Detect, error) {
-	logger := loggerPkg.DefaultLogger()
+	logger := logger.DefaultLogger()
 
-	application, err := applicationPkg.DefaultApplication(logger)
+	application, err := application.DefaultApplication(logger)
 	if err != nil {
 		return Detect{}, err
 	}
 
-	buildpack, err := buildpackPkg.DefaultBuildpack(logger)
+	buildpack, err := buildpack.DefaultBuildpack(logger)
 	if err != nil {
 		return Detect{}, err
 	}
 
-	buildPlan := buildplanPkg.BuildPlan{}
+	buildPlan := buildplan.BuildPlan{}
 
-	buildPlanWriter := buildplanPkg.DefaultWriter(2)
+	buildPlanWriter := buildplan.DefaultWriter(2)
 
-	platformRoot, err := internal.OsArgs(1)
+	platformRoot, err := internal.Argument(1)
 	if err != nil {
 		return Detect{}, err
 	}
-	platform, err := platformPkg.DefaultPlatform(platformRoot, logger)
+	platform, err := platform.DefaultPlatform(platformRoot, logger)
 	if err != nil {
 		return Detect{}, err
 	}
 
-	stack, err := stackPkg.DefaultStack(logger)
+	stack, err := stack.DefaultStack(logger)
 	if err != nil {
 		return Detect{}, err
 	}

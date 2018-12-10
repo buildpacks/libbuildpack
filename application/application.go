@@ -29,13 +29,12 @@ type Application struct {
 	// Root is the path to the root directory of the application.
 	Root string
 
-	// Logger is used to write debug and info to the console.
-	Logger logger.Logger
+	logger logger.Logger
 }
 
 // String makes Application satisfy the Stringer interface.
 func (a Application) String() string {
-	return fmt.Sprintf("Application{ Root: %s, Logger: %s }", a.Root, a.Logger)
+	return fmt.Sprintf("Application{ Root: %s, logger: %s }", a.Root, a.logger)
 }
 
 // DefaultApplication creates a new instance of Application, extracting the Root path from the working directory.
@@ -53,8 +52,5 @@ func DefaultApplication(logger logger.Logger) (Application, error) {
 		logger.Debug("Application contents: %s", contents)
 	}
 
-	return Application{
-		root,
-		logger,
-	}, nil
+	return Application{root, logger}, nil
 }

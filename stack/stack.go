@@ -23,14 +23,17 @@ import (
 	"github.com/buildpack/libbuildpack/logger"
 )
 
-// DefaultStack creates a new instance of Stack, extracting the name from the PACK_STACK_ID environment variable.
-func DefaultStack(logger logger.Logger) (string, error) {
-	s, ok := os.LookupEnv("PACK_STACK_ID")
+type Stack string
 
+// DefaultStack creates a new instance of Stack, extracting the name from the PACK_STACK_ID environment variable.
+func DefaultStack(logger logger.Logger) (Stack, error) {
+	s, ok := os.LookupEnv("PACK_STACK_ID")
 	if !ok {
 		return "", fmt.Errorf("PACK_STACK_ID not set")
 	}
 
-	logger.Debug("Stack: %s", s)
-	return s, nil
+	stack := Stack(s)
+	logger.Debug("Stack: %s", stack)
+
+	return stack, nil
 }

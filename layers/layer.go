@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/buildpack/libbuildpack/internal"
@@ -32,11 +31,10 @@ type Layer struct {
 	// Root is the path to the root directory for the layer.
 	Root string
 
-	// Logger is used to write debug and info to the console.
-	Logger logger.Logger
-
-	// Metadata is the location of the metadata for the layer.
+	// Metadata is the location of the layer's metadata file.
 	Metadata string
+
+	logger logger.Logger
 }
 
 // AppendBuildEnv appends the value of this environment variable to any previous declarations of the value without any
@@ -92,7 +90,7 @@ func (l Layer) OverrideSharedEnv(name string, format string, args ...interface{}
 
 // String makes Layer satisfy the Stringer interface.
 func (l Layer) String() string {
-	return fmt.Sprintf("Layer{ Root: %s, Logger: %s Metadata: %s }", l.Root, l.Logger, l.Metadata)
+	return fmt.Sprintf("Layer{ Root: %s, Metadata: %s, logger: %s }", l.Root, l.Metadata, l.logger)
 }
 
 // ReadMetadata reads arbitrary layer metadata from the filesystem.
@@ -103,7 +101,7 @@ func (l Layer) ReadMetadata(metadata interface{}) error {
 	}
 
 	if !exists {
-		l.Logger.Debug("Metadata %s does not exist", l.Metadata)
+		l.logger.Debug("Metadata %s does not exist", l.Metadata)
 		return nil
 	}
 
@@ -120,7 +118,7 @@ func (l Layer) ReadMetadata(metadata interface{}) error {
 		return err
 	}
 
-	l.Logger.Debug("Reading layer metadata: %s => %v", l.Metadata, metadata)
+	l.logger.Debug("Reading layer metadata: %s => %v", l.Metadata, metadata)
 	return nil
 }
 
@@ -132,7 +130,7 @@ func (l Layer) RemoveMetadata() error {
 	}
 
 	if !exists {
-		l.Logger.Debug("Metadata %s does not exist", l.Metadata)
+		l.logger.Debug("Metadata %s does not exist", l.Metadata)
 		return nil
 	}
 
@@ -141,41 +139,30 @@ func (l Layer) RemoveMetadata() error {
 
 // WriteMetadata writes arbitrary layer metadata to the filesystem.
 func (l Layer) WriteMetadata(metadata interface{}, flags ...Flag) error {
-	out := struct {
-		Build    bool        `toml:"build"`
-		Cache    bool        `toml:"cache"`
-		Launch   bool        `toml:"launch"`
-		Metadata interface{} `toml:"metadata"`
-	}{Metadata: metadata}
+	lm := layerMetadata{Metadata: metadata}
 
 	for _, flag := range flags {
 		switch flag {
 		case Build:
-			out.Build = true
+			lm.Build = true
 		case Cache:
-			out.Cache = true
+			lm.Cache = true
 		case Launch:
-			out.Launch = true
+			lm.Launch = true
 		}
 	}
 
-	s, err := internal.ToTomlString(out)
-	if err != nil {
-		return err
-	}
-
-	l.Logger.Debug("Writing layer metadata: %s <= %s", l.Metadata, s)
-	return internal.WriteToFile(strings.NewReader(s), l.Metadata, 0644)
+	l.logger.Debug("Writing layer metadata: %s <= %s", l.Metadata, lm)
+	return internal.WriteTomlFile(l.Metadata, 0644, lm)
 }
 
 // WriteProfile writes a file to profile.d with this value.
 func (l Layer) WriteProfile(file string, format string, args ...interface{}) error {
 	f := filepath.Join(l.Root, "profile.d", file)
-	v := fmt.Sprintf(format, args...)
+	s := fmt.Sprintf(format, args...)
 
-	l.Logger.Debug("Writing profile: %s <= %s", f, v)
-
-	return internal.WriteToFile(strings.NewReader(v), f, 0644)
+	l.logger.Debug("Writing profile: %s <= %s", f, s)
+	return internal.WriteFile(f, 0644, s)
 }
 
 func (l Layer) addBuildEnvFile(file string, format string, args ...interface{}) error {
@@ -186,9 +173,8 @@ func (l Layer) addEnvFile(file string, format string, args ...interface{}) error
 	f := filepath.Join(l.Root, file)
 	v := fmt.Sprintf(format, args...)
 
-	l.Logger.Debug("Writing environment variable: %s <= %s", f, v)
-
-	return internal.WriteToFile(strings.NewReader(v), f, 0644)
+	l.logger.Debug("Writing environment variable: %s <= %s", f, v)
+	return internal.WriteFile(f, 0644, v)
 }
 
 func (l Layer) addLaunchEnvFile(file string, format string, args ...interface{}) error {
@@ -197,4 +183,17 @@ func (l Layer) addLaunchEnvFile(file string, format string, args ...interface{})
 
 func (l Layer) addSharedEnvFile(file string, format string, args ...interface{}) error {
 	return l.addEnvFile(filepath.Join("env", file), format, args...)
+}
+
+type layerMetadata struct {
+	Build    bool        `toml:"build"`
+	Cache    bool        `toml:"cache"`
+	Launch   bool        `toml:"launch"`
+	Metadata interface{} `toml:"metadata"`
+}
+
+// String makes layerMetadata satisfy the Stringer interface.
+func (l layerMetadata) String() string {
+	return fmt.Sprintf("layerMetadata{ Build: %t, Cache: %t, Launch: %t, Metadata: %s }",
+		l.Build, l.Cache, l.Launch, l.Metadata)
 }

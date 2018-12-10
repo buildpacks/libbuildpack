@@ -18,44 +18,36 @@ package detect_test
 
 import (
 	"path/filepath"
-	"reflect"
-	"strings"
 	"testing"
 
-	"github.com/buildpack/libbuildpack/application"
-	"github.com/buildpack/libbuildpack/buildpack"
 	"github.com/buildpack/libbuildpack/buildplan"
-	detectPkg "github.com/buildpack/libbuildpack/detect"
+	"github.com/buildpack/libbuildpack/detect"
 	"github.com/buildpack/libbuildpack/internal"
-	"github.com/buildpack/libbuildpack/logger"
-	"github.com/buildpack/libbuildpack/platform"
+	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
 
 func TestDetect(t *testing.T) {
-	spec.Run(t, "Detect", testDetect, spec.Report(report.Terminal{}))
-}
+	spec.Run(t, "Detect", func(t *testing.T, _ spec.G, it spec.S) {
 
-func testDetect(t *testing.T, when spec.G, it spec.S) {
+		g := NewGomegaWithT(t)
 
-	it("contains default values", func() {
-		root := internal.ScratchDir(t, "detect")
-		defer internal.ReplaceWorkingDirectory(t, root)()
-		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+		var root string
 
-		console, d := internal.ReplaceConsole(t)
-		defer d()
+		it.Before(func() {
+			root = internal.ScratchDir(t, "detect")
+		})
 
-		console.In(t, `[alpha]
-  version = "alpha-version"
-  name = "alpha-name"
+		it("contains default values", func() {
+			defer internal.ReplaceWorkingDirectory(t, root)()
+			defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+			defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
 
-[bravo]
-  name = "bravo-name"
-`)
+			console, e := internal.ReplaceConsole(t)
+			defer e()
 
-		in := strings.NewReader(`[buildpack]
+			internal.WriteTestFile(t, filepath.Join(root, "buildpack.toml"), `[buildpack]
 id = "buildpack-id"
 name = "buildpack-name"
 version = "buildpack-version"
@@ -69,121 +61,71 @@ run-images = ["run-image-tag"]
 test-key = "test-value"
 `)
 
-		if err := internal.WriteToFile(in, filepath.Join(root, "buildpack.toml"), 0644); err != nil {
-			t.Fatal(err)
-		}
+			d, err := detect.DefaultDetect()
+			g.Expect(err).NotTo(HaveOccurred())
 
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
+			console.In(t, `[alpha]
+  version = "alpha-version"
+  name = "alpha-name"
 
-		detect, err := detectPkg.DefaultDetect()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if err := detect.BuildPlan.Init(); err != nil {
-			t.Fatal(err)
-		}
-
-		if reflect.DeepEqual(detect.Application, application.Application{}) {
-			t.Errorf("detect.Application should not be empty")
-		}
-
-		if reflect.DeepEqual(detect.Buildpack, buildpack.Buildpack{}) {
-			t.Errorf("detect.Buildpack should not be empty")
-		}
-
-		if reflect.DeepEqual(detect.BuildPlan, buildplan.BuildPlan{}) {
-			t.Errorf("detect.BuildPlan should not be empty")
-		}
-
-		if reflect.DeepEqual(detect.Logger, logger.Logger{}) {
-			t.Errorf("detect.Logger should not be empty")
-		}
-
-		if reflect.DeepEqual(detect.Platform, platform.Platform{}) {
-			t.Errorf("detect.Platform should not be empty")
-		}
-
-		if reflect.DeepEqual(detect.Stack, "") {
-			t.Errorf("detect.Stack should not be empty")
-		}
-	})
-
-	it("returns code when erroring", func() {
-		root := internal.ScratchDir(t, "detect")
-		defer internal.ReplaceWorkingDirectory(t, root)()
-		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
-
-		if err := internal.WriteToFile(strings.NewReader(""), filepath.Join(root, "buildpack.toml"), 0644); err != nil {
-			t.Fatal(err)
-		}
-
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
-
-		detect, err := detectPkg.DefaultDetect()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		actual := detect.Error(42)
-
-		if actual != 42 {
-			t.Errorf("Detect.Error() = %d, expected 42", actual)
-		}
-	})
-
-	it("returns 100 when failing", func() {
-		root := internal.ScratchDir(t, "detect")
-		defer internal.ReplaceWorkingDirectory(t, root)()
-		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
-
-		if err := internal.WriteToFile(strings.NewReader(""), filepath.Join(root, "buildpack.toml"), 0644); err != nil {
-			t.Fatal(err)
-		}
-
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
-
-		detect, err := detectPkg.DefaultDetect()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		actual := detect.Fail()
-
-		if actual != detectPkg.FailStatusCode {
-			t.Errorf("Detect.Fail() = %d, expected 100", actual)
-		}
-	})
-
-	it("returns 0 and BuildPlan when passing", func() {
-		root := internal.ScratchDir(t, "detect")
-		defer internal.ReplaceWorkingDirectory(t, root)()
-		defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
-
-		if err := internal.WriteToFile(strings.NewReader(""), filepath.Join(root, "buildpack.toml"), 0644); err != nil {
-			t.Fatal(err)
-		}
-
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
-
-		detect, err := detectPkg.DefaultDetect()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		actual, err := detect.Pass(buildplan.BuildPlan{
-			"alpha": buildplan.Dependency{Version: "test-version"},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if actual != detectPkg.PassStatusCode {
-			t.Errorf("Detect.Pass() = %d, expected 0", actual)
-		}
-
-		internal.BeFileLike(t, filepath.Join(root, "plan.toml"), 0644, `[alpha]
-  version = "test-version"
+[bravo]
+  name = "bravo-name"
 `)
-	})
+
+			g.Expect(d.BuildPlan.Init()).To(Succeed())
+
+			g.Expect(d.Application).NotTo(BeZero())
+			g.Expect(d.Buildpack).NotTo(BeZero())
+			g.Expect(d.BuildPlan).NotTo(BeZero())
+			g.Expect(d.BuildPlanWriter).NotTo(BeZero())
+			g.Expect(d.Logger).NotTo(BeZero())
+			g.Expect(d.Platform).NotTo(BeZero())
+			g.Expect(d.Stack).NotTo(BeZero())
+		})
+
+		it("returns code when erroring", func() {
+			defer internal.ReplaceWorkingDirectory(t, root)()
+			defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+			defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
+
+			internal.TouchTestFile(t, root, "buildpack.toml")
+
+			d, err := detect.DefaultDetect()
+			g.Expect(err).NotTo(HaveOccurred())
+
+			g.Expect(d.Error(42)).To(Equal(42))
+		})
+
+		it("returns 100 when failing", func() {
+			defer internal.ReplaceWorkingDirectory(t, root)()
+			defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+			defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
+
+			internal.TouchTestFile(t, root, "buildpack.toml")
+
+			d, err := detect.DefaultDetect()
+			g.Expect(err).NotTo(HaveOccurred())
+
+			g.Expect(d.Fail()).To(Equal(detect.FailStatusCode))
+		})
+
+		it("returns 0 and BuildPlan when passing", func() {
+			defer internal.ReplaceWorkingDirectory(t, root)()
+			defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+			defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
+
+			internal.TouchTestFile(t, root, "buildpack.toml")
+
+			d, err := detect.DefaultDetect()
+			g.Expect(err).NotTo(HaveOccurred())
+
+			g.Expect(d.Pass(buildplan.BuildPlan{
+				"alpha": buildplan.Dependency{Version: "test-version"},
+			})).To(Equal(detect.PassStatusCode))
+
+			g.Expect(filepath.Join(root, "plan.toml")).To(internal.HaveContent(`[alpha]
+  version = "test-version"
+`))
+		})
+	}, spec.Report(report.Terminal{}))
 }

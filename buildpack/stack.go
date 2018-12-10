@@ -26,10 +26,10 @@ type Stack struct {
 	ID string `toml:"id"`
 
 	// BuildImages are the suggested sources for stacks if the platform is unaware of the stack id.
-	BuildImages []BuildImages `toml:"build-images"`
+	BuildImages BuildImages `toml:"build-images"`
 
 	// RunImages are the suggested sources for stacks if the platform is unaware of the stack id.
-	RunImages []RunImages `toml:"run-images"`
+	RunImages RunImages `toml:"run-images"`
 }
 
 // String makes Stack satisfy the Stringer interface.
@@ -37,8 +37,14 @@ func (s Stack) String() string {
 	return fmt.Sprintf("Stack{ ID: %s, BuildImages: %s, RunImages: %s }", s.ID, s.BuildImages, s.RunImages)
 }
 
-// BuildImages is the build image source for a particular stack id.
-type BuildImages string
+// BuildImages is a collection of BuildImages.
+type BuildImages []BuildImage
 
-// RunImages is the run image source for a particular stack id.
-type RunImages string
+// BuildImage is the build image source for a particular stack id.
+type BuildImage string
+
+// RunImages is a collection of RunImages.
+type RunImages []RunImage
+
+// RunImage is the run image source for a particular stack id.
+type RunImage string

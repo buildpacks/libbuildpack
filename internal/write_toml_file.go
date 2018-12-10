@@ -14,25 +14,27 @@
  * limitations under the License.
  */
 
-package buildplan
+package internal
 
 import (
-	"fmt"
+	"os"
+	"path/filepath"
+
+	"github.com/BurntSushi/toml"
 )
 
-// Dependency represents a dependency in a build.
-type Dependency struct {
-	// Version is the optional dependency version.
-	Version string `toml:"version"`
+// WriteTomlFile writes a file with a TOML representation of the given value.  Before writing it creates all required
+// parent directories for the file.
+func WriteTomlFile(filename string, perm os.FileMode, value interface{}) error {
+	if err := os.MkdirAll(filepath.Dir(filename), 0755); err != nil {
+		return err
+	}
 
-	// Metadata is additional metadata attached to the dependency.
-	Metadata Metadata `toml:"metadata"`
+	file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, perm)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	return toml.NewEncoder(file).Encode(value)
 }
-
-// String makes Dependency satisfy the Stringer interface.
-func (d Dependency) String() string {
-	return fmt.Sprintf("Dependency{ Version: %s, Metadata: %s }", d.Version, d.Metadata)
-}
-
-// Metadata is additional metadata attached to a dependency.
-type Metadata = map[string]interface{}

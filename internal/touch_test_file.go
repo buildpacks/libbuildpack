@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-package buildplan
+package internal
 
 import (
-	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"testing"
 )
 
-// Dependency represents a dependency in a build.
-type Dependency struct {
-	// Version is the optional dependency version.
-	Version string `toml:"version"`
+// TouchTestFile writes a zero-length file during testing.
+func TouchTestFile(t *testing.T, elem ...string) {
+	filename := filepath.Join(elem...)
 
-	// Metadata is additional metadata attached to the dependency.
-	Metadata Metadata `toml:"metadata"`
+	if err := os.MkdirAll(filepath.Dir(filename), 0755); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := ioutil.WriteFile(filename, []byte{}, 0644); err != nil {
+		t.Fatal(err)
+	}
 }
-
-// String makes Dependency satisfy the Stringer interface.
-func (d Dependency) String() string {
-	return fmt.Sprintf("Dependency{ Version: %s, Metadata: %s }", d.Version, d.Metadata)
-}
-
-// Metadata is additional metadata attached to a dependency.
-type Metadata = map[string]interface{}

@@ -18,35 +18,30 @@ package platform_test
 
 import (
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/logger"
-	platformPkg "github.com/buildpack/libbuildpack/platform"
+	"github.com/buildpack/libbuildpack/platform"
+	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
 
 func TestPlatform(t *testing.T) {
-	spec.Run(t, "Platform", testPlatform, spec.Report(report.Terminal{}))
-}
+	spec.Run(t, "Platform", func(t *testing.T, _ spec.G, it spec.S) {
 
-func testPlatform(t *testing.T, when spec.G, it spec.S) {
+		g := NewGomegaWithT(t)
 
-	it("enumerates platform environment variables", func() {
-		root := internal.ScratchDir(t, "platform")
-		if err := internal.WriteToFile(strings.NewReader("test-value"), filepath.Join(root, "platform", "env", "TEST_KEY"), 0644); err != nil {
-			t.Fatal(err)
-		}
+		it("enumerates platform environment variables", func() {
+			root := internal.ScratchDir(t, "platform")
 
-		platform, err := platformPkg.DefaultPlatform(filepath.Join(root, "platform"), logger.Logger{})
-		if err != nil {
-			t.Fatal(err)
-		}
+			internal.WriteTestFile(t, filepath.Join(root, "env", "TEST_KEY"), "test-value")
 
-		if platform.Envs[0].Name != "TEST_KEY" {
-			t.Errorf("Platform.Envs[0].Name = %s, expected TEST_KEY", platform.Envs[0])
-		}
-	})
+			platform, err := platform.DefaultPlatform(root, logger.Logger{})
+			g.Expect(err).To(Succeed())
+
+			g.Expect(platform.EnvironmentVariables).To(HaveKey("TEST_KEY"))
+		})
+	}, spec.Report(report.Terminal{}))
 }

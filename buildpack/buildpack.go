@@ -19,7 +19,6 @@ package buildpack
 import (
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
@@ -32,23 +31,22 @@ type Buildpack struct {
 	// Info is information about the buildpack.
 	Info Info `toml:"buildpack"`
 
-	// Stacks is the collection of stacks that the buildpack supports.
-	Stacks []Stack `toml:"stacks"`
-
 	// Metadata is the additional metadata included in the buildpack.
 	Metadata Metadata `toml:"metadata"`
 
-	// Logger is used to write debug and info to the console.
-	Logger logger.Logger
-
 	// Root is the path to the root directory for the buildpack.
 	Root string
+
+	// Stacks is the collection of stacks that the buildpack supports.
+	Stacks []Stack `toml:"stacks"`
+
+	logger logger.Logger
 }
 
 // String makes Buildpack satisfy the Stringer interface.
 func (b Buildpack) String() string {
-	return fmt.Sprintf("Buildpack{ Info: %s, Stacks: %s, Metadata: %s, Logger: %s, Root: %s }",
-		b.Info, b.Stacks, b.Metadata, b.Logger, b.Root)
+	return fmt.Sprintf("Buildpack{ Info: %s, Metadata: %s, Root: %s, Stacks: %s, logger: %s }",
+		b.Info, b.Metadata, b.Root, b.Stacks, b.logger)
 }
 
 // DefaultBuildpack creates a new instance of Buildpack extracting the contents of the buildpack.toml file in the root
@@ -65,10 +63,7 @@ func DefaultBuildpack(logger logger.Logger) (Buildpack, error) {
 	}
 	defer in.Close()
 
-	b := Buildpack{
-		Logger: logger,
-		Root:   filepath.Dir(f),
-	}
+	b := Buildpack{Root: filepath.Dir(f), logger: logger}
 
 	if _, err := toml.DecodeReader(in, &b); err != nil {
 		return Buildpack{}, err
@@ -79,12 +74,12 @@ func DefaultBuildpack(logger logger.Logger) (Buildpack, error) {
 }
 
 func findBuildpackToml() (string, error) {
-	exec, err := internal.OsArgs(0)
+	path, err := internal.Argument(0)
 	if err != nil {
 		return "", err
 	}
 
-	dir, err := filepath.Abs(path.Dir(exec))
+	dir, err := filepath.Abs(filepath.Dir(path))
 	if err != nil {
 		return "", err
 	}

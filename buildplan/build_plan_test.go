@@ -17,26 +17,25 @@
 package buildplan_test
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/buildpack/libbuildpack/internal"
+	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
 
 func TestBuildPlan(t *testing.T) {
-	spec.Run(t, "BuildPlan", testBuildPlan, spec.Report(report.Terminal{}))
-}
+	spec.Run(t, "BuildPlan", func(t *testing.T, _ spec.G, it spec.S) {
 
-func testBuildPlan(t *testing.T, when spec.G, it spec.S) {
+		g := NewGomegaWithT(t)
 
-	it("unmarshals from os.Stdin", func() {
-		console, d := internal.ReplaceConsole(t)
-		defer d()
+		it("unmarshals from os.Stdin", func() {
+			console, d := internal.ReplaceConsole(t)
+			defer d()
 
-		console.In(t, `[alpha]
+			console.In(t, `[alpha]
   version = "alpha-version"
 
   [alpha.metadata]
@@ -45,41 +44,16 @@ func testBuildPlan(t *testing.T, when spec.G, it spec.S) {
 [bravo]
 `)
 
-		buildPlan := buildplan.BuildPlan{}
-		if err := buildPlan.Init(); err != nil {
-			t.Fatal(err)
-		}
+			buildPlan := buildplan.BuildPlan{}
+			g.Expect(buildPlan.Init()).To(Succeed())
 
-		expected := buildplan.BuildPlan{
-			"alpha": buildplan.Dependency{
-				Version:  "alpha-version",
-				Metadata: buildplan.Metadata{"test-key": "test-value"},
-			},
-			"bravo": buildplan.Dependency{
-			},
-		}
-
-		if !reflect.DeepEqual(buildPlan, expected) {
-			t.Errorf("BuildPlan = %s, wanted %s", buildPlan, expected)
-		}
-	})
-
-	it("returns a dependency by name", func() {
-		expected := buildplan.Dependency{}
-		p := buildplan.BuildPlan{"test-dependency": expected}
-
-		actual := p["test-dependency"]
-		if !reflect.DeepEqual(actual, expected) {
-			t.Errorf("BuildPlan[\"test-dependency\"] = %s, expected %s", actual, expected)
-		}
-	})
-
-	it("returns nil if a named dependency does not exist", func() {
-		p := buildplan.BuildPlan{}
-
-		actual, ok := p["test-dependency"]
-		if ok {
-			t.Errorf("BuildPlan[\"test-dependency\"] = %s, expected nil", actual)
-		}
-	})
+			g.Expect(buildPlan).To(Equal(buildplan.BuildPlan{
+				"alpha": buildplan.Dependency{
+					Version:  "alpha-version",
+					Metadata: buildplan.Metadata{"test-key": "test-value"},
+				},
+				"bravo": buildplan.Dependency{},
+			}))
+		})
+	}, spec.Report(report.Terminal{}))
 }

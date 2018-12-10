@@ -60,17 +60,11 @@ type Writer func(buildPlan BuildPlan) error
 // DefaultWriter writes the build plan to a collection of files rooted at os.Args[<INDEX>].
 func DefaultWriter(index int) Writer {
 	return func(buildPlan BuildPlan) error {
-		path, err := internal.OsArgs(index)
+		path, err := internal.Argument(index)
 		if err != nil {
 			return err
 		}
 
-		s, err := internal.ToTomlString(buildPlan)
-		if err != nil {
-			return err
-		}
-
-		return internal.WriteToFile(strings.NewReader(s), path, 0644)
+		return internal.WriteTomlFile(path, 0644, buildPlan)
 	}
-
 }

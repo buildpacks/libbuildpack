@@ -14,25 +14,32 @@
  * limitations under the License.
  */
 
-package buildplan
+package internal
 
 import (
-	"fmt"
+	"os"
+	"testing"
 )
 
-// Dependency represents a dependency in a build.
-type Dependency struct {
-	// Version is the optional dependency version.
-	Version string `toml:"version"`
+// ReplaceWorkingDirectory replaces the current working directory (os.Getwd()) with a new value.  Returns a function for
+// use with defer in order to reset the previous value
+//
+// defer ReplaceWorkingDirectory(t, "alpha")()
+func ReplaceWorkingDirectory(t *testing.T, dir string) func() {
+	t.Helper()
 
-	// Metadata is additional metadata attached to the dependency.
-	Metadata Metadata `toml:"metadata"`
+	previous, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = os.Chdir(dir); err != nil {
+		t.Fatal(err)
+	}
+
+	return func() {
+		if err := os.Chdir(previous); err != nil {
+			t.Fatal(err)
+		}
+	}
 }
-
-// String makes Dependency satisfy the Stringer interface.
-func (d Dependency) String() string {
-	return fmt.Sprintf("Dependency{ Version: %s, Metadata: %s }", d.Version, d.Metadata)
-}
-
-// Metadata is additional metadata attached to a dependency.
-type Metadata = map[string]interface{}

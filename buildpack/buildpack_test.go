@@ -18,28 +18,26 @@ package buildpack_test
 
 import (
 	"path/filepath"
-	"reflect"
-	"strings"
 	"testing"
 
-	buildpackPkg "github.com/buildpack/libbuildpack/buildpack"
+	"github.com/buildpack/libbuildpack/buildpack"
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/logger"
+	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
 
 func TestBuildpack(t *testing.T) {
-	spec.Run(t, "Buildpack", testBuildpack, spec.Report(report.Terminal{}))
-}
+	spec.Run(t, "Buildpack", func(t *testing.T, _ spec.G, it spec.S) {
 
-func testBuildpack(t *testing.T, when spec.G, it spec.S) {
+		g := NewGomegaWithT(t)
 
-	it("unmarshals default from buildpack.toml", func() {
-		root := internal.ScratchDir(t, "buildpack")
-		defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"))()
+		it("unmarshals default from buildpack.toml", func() {
+			root := internal.ScratchDir(t, "buildpack")
+			defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"))()
 
-		in := strings.NewReader(`[buildpack]
+			internal.WriteTestFile(t, filepath.Join(root, "buildpack.toml"), `[buildpack]
 id = "buildpack-id"
 name = "buildpack-name"
 version = "buildpack-version"
@@ -53,36 +51,22 @@ run-images = ["run-image-tag"]
 test-key = "test-value"
 `)
 
-		if err := internal.WriteToFile(in, filepath.Join(root, "buildpack.toml"), 0644); err != nil {
-			t.Fatal(err)
-		}
-
-		buildpack, err := buildpackPkg.DefaultBuildpack(logger.Logger{})
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		expected := buildpackPkg.Buildpack{
-			Info: buildpackPkg.Info{
-				ID:      "buildpack-id",
-				Name:    "buildpack-name",
-				Version: "buildpack-version",
-			},
-			Stacks: []buildpackPkg.Stack{
-				{
-					ID:          "stack-id",
-					BuildImages: []buildpackPkg.BuildImages{"build-image-tag"},
-					RunImages:   []buildpackPkg.RunImages{"run-image-tag"},
+			g.Expect(buildpack.DefaultBuildpack(logger.Logger{})).To(Equal(buildpack.Buildpack{
+				Info: buildpack.Info{
+					ID:      "buildpack-id",
+					Name:    "buildpack-name",
+					Version: "buildpack-version",
 				},
-			},
-			Metadata: buildpackPkg.Metadata{
-				"test-key": "test-value",
-			},
-			Root: root,
-		}
-
-		if !reflect.DeepEqual(buildpack, expected) {
-			t.Errorf("Buildpack = %s, wanted %s", buildpack, expected)
-		}
-	})
+				Stacks: []buildpack.Stack{
+					{
+						ID:          "stack-id",
+						BuildImages: buildpack.BuildImages{"build-image-tag"},
+						RunImages:   buildpack.RunImages{"run-image-tag"},
+					},
+				},
+				Metadata: buildpack.Metadata{"test-key": "test-value"},
+				Root:     root,
+			}))
+		})
+	}, spec.Report(report.Terminal{}))
 }
