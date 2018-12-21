@@ -159,10 +159,12 @@ func (l Layer) WriteMetadata(metadata interface{}, flags ...Flag) error {
 // WriteProfile writes a file to profile.d with this value.
 func (l Layer) WriteProfile(file string, format string, args ...interface{}) error {
 	f := filepath.Join(l.Root, "profile.d", file)
-	s := fmt.Sprintf(format, args...)
 
-	l.logger.Debug("Writing profile: %s <= %s", f, s)
-	return internal.WriteFile(f, 0644, s)
+	if l.logger.IsDebugEnabled() {
+		l.logger.Debug("Writing profile: %s <= %s", f, fmt.Sprintf(format, args...))
+	}
+
+	return internal.WriteFile(f, 0644, format, args...)
 }
 
 func (l Layer) addBuildEnvFile(file string, format string, args ...interface{}) error {
@@ -171,10 +173,12 @@ func (l Layer) addBuildEnvFile(file string, format string, args ...interface{}) 
 
 func (l Layer) addEnvFile(file string, format string, args ...interface{}) error {
 	f := filepath.Join(l.Root, file)
-	v := fmt.Sprintf(format, args...)
 
-	l.logger.Debug("Writing environment variable: %s <= %s", f, v)
-	return internal.WriteFile(f, 0644, v)
+	if l.logger.IsDebugEnabled() {
+		l.logger.Debug("Writing environment variable: %s <= %s", f, fmt.Sprintf(format, args...))
+	}
+
+	return internal.WriteFile(f, 0644, format, args...)
 }
 
 func (l Layer) addLaunchEnvFile(file string, format string, args ...interface{}) error {
