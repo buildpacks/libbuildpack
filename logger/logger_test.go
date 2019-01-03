@@ -81,10 +81,13 @@ func TestLogger(t *testing.T) {
 		})
 
 		it("suppresses debug output", func() {
+			root := internal.ScratchDir(t, "logger")
 			c, d := internal.ReplaceConsole(t)
 			defer d()
 
-			logger := logger.DefaultLogger()
+			logger, err := logger.DefaultLogger(root)
+			g.Expect(err).NotTo(HaveOccurred())
+
 			logger.Debug("test-debug-output")
 			logger.Info("test-info-output")
 
@@ -93,11 +96,30 @@ func TestLogger(t *testing.T) {
 		})
 
 		it("allows debug output if BP_DEBUG is set", func() {
+			root := internal.ScratchDir(t, "logger")
 			c, d := internal.ReplaceConsole(t)
 			defer d()
 			defer internal.ReplaceEnv(t, "BP_DEBUG", "")()
 
-			logger := logger.DefaultLogger()
+			logger, err := logger.DefaultLogger(root)
+			g.Expect(err).NotTo(HaveOccurred())
+
+			logger.Debug("test-debug-output")
+			logger.Info("test-info-output")
+
+			g.Expect(c.Err(t)).To(ContainSubstring("test-debug-output"))
+			g.Expect(c.Out(t)).To(ContainSubstring("test-info-output"))
+		})
+
+		it("allows debug output if platform/env/BP_DEBUG is set", func() {
+			root := internal.ScratchDir(t, "logger")
+			internal.TouchTestFile(t, root, "env", "BP_DEBUG")
+			c, d := internal.ReplaceConsole(t)
+			defer d()
+
+			logger, err := logger.DefaultLogger(root)
+			g.Expect(err).NotTo(HaveOccurred())
+
 			logger.Debug("test-debug-output")
 			logger.Info("test-info-output")
 

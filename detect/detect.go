@@ -91,7 +91,15 @@ func (d Detect) String() string {
 
 // DefaultDetect creates a new instance of Detect using default values.
 func DefaultDetect() (Detect, error) {
-	logger := logger.DefaultLogger()
+	platformRoot, err := internal.Argument(1)
+	if err != nil {
+		return Detect{}, err
+	}
+
+	logger, err := logger.DefaultLogger(platformRoot)
+	if err != nil {
+		return Detect{}, err
+	}
 
 	application, err := application.DefaultApplication(logger)
 	if err != nil {
@@ -107,10 +115,6 @@ func DefaultDetect() (Detect, error) {
 
 	buildPlanWriter := buildplan.DefaultWriter(2)
 
-	platformRoot, err := internal.Argument(1)
-	if err != nil {
-		return Detect{}, err
-	}
 	platform, err := platform.DefaultPlatform(platformRoot, logger)
 	if err != nil {
 		return Detect{}, err

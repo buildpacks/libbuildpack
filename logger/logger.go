@@ -21,6 +21,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+
+	"github.com/buildpack/libbuildpack/internal"
 )
 
 // Logger is a type that contains references to the console output for debug and info logging levels.
@@ -69,14 +72,19 @@ func (l Logger) String() string {
 }
 
 // DefaultLogger creates a new instance of Logger, suppressing debug output unless BP_DEBUG is set.
-func DefaultLogger() Logger {
-	var debug io.Writer
+func DefaultLogger(platform string) (Logger, error) {
+	_, e := os.LookupEnv("BP_DEBUG")
 
-	if _, ok := os.LookupEnv("BP_DEBUG"); ok {
-		debug = os.Stderr
+	p, err := internal.FileExists(filepath.Join(platform, "env", "BP_DEBUG"))
+	if err != nil {
+		return Logger{}, err
 	}
 
-	return NewLogger(debug, os.Stdout)
+	if e || p {
+		return NewLogger(os.Stderr, os.Stdout), nil
+	}
+
+	return NewLogger(nil, os.Stdout), nil
 }
 
 // NewLogger creates a new instance of Logger, configuring the debug and info writers to use.  If writer is nil, that

@@ -84,7 +84,15 @@ func (b Build) Success(buildPlan buildplan.BuildPlan) (int, error) {
 
 // DefaultBuild creates a new instance of Build using default values.
 func DefaultBuild() (Build, error) {
-	logger := logger.DefaultLogger()
+	platformRoot, err := internal.Argument(2)
+	if err != nil {
+		return Build{}, err
+	}
+
+	logger, err := logger.DefaultLogger(platformRoot)
+	if err != nil {
+		return Build{}, nil
+	}
 
 	application, err := application.DefaultApplication(logger)
 	if err != nil {
@@ -109,10 +117,6 @@ func DefaultBuild() (Build, error) {
 	}
 	layers := layers.NewLayers(layersRoot, logger)
 
-	platformRoot, err := internal.Argument(2)
-	if err != nil {
-		return Build{}, err
-	}
 	platform, err := platform.DefaultPlatform(platformRoot, logger)
 	if err != nil {
 		return Build{}, err
