@@ -26,6 +26,7 @@ import (
 	"github.com/buildpack/libbuildpack/layers"
 	"github.com/buildpack/libbuildpack/logger"
 	"github.com/buildpack/libbuildpack/platform"
+	"github.com/buildpack/libbuildpack/services"
 	"github.com/buildpack/libbuildpack/stack"
 )
 
@@ -55,6 +56,9 @@ type Build struct {
 	// Platform represents components contributed by the platform to the buildpack.
 	Platform platform.Platform
 
+	// Services represents the services bound to the application.
+	Services services.Services
+
 	// Stack is the stack currently available to the application.
 	Stack stack.Stack
 }
@@ -67,8 +71,8 @@ func (b Build) Failure(code int) int {
 
 // String makes Build satisfy the Stringer interface.
 func (b Build) String() string {
-	return fmt.Sprintf("Build{ Application: %s, Buildpack: %s, BuildPlan: %s, BuildPlanWriter: %v, Layers: %s, Logger: %s, Platform: %s, Stack: %s }",
-		b.Application, b.Buildpack, b.BuildPlan, b.BuildPlanWriter, b.Layers, b.Logger, b.Platform, b.Stack)
+	return fmt.Sprintf("Build{ Application: %s, Buildpack: %s, BuildPlan: %s, BuildPlanWriter: %v, Layers: %s, Logger: %s, Platform: %s, Services: %s, Stack: %s }",
+		b.Application, b.Buildpack, b.BuildPlan, b.BuildPlanWriter, b.Layers, b.Logger, b.Platform, b.Services, b.Stack)
 }
 
 // Success signals a successful build by exiting with a zero status code.
@@ -122,6 +126,11 @@ func DefaultBuild() (Build, error) {
 		return Build{}, err
 	}
 
+	services, err := services.DefaultServices(platform, logger)
+	if err != nil {
+		return Build{}, err
+	}
+
 	stack, err := stack.DefaultStack(logger)
 	if err != nil {
 		return Build{}, err
@@ -135,6 +144,7 @@ func DefaultBuild() (Build, error) {
 		layers,
 		logger,
 		platform,
+		services,
 		stack,
 	}, nil
 }

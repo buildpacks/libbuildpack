@@ -25,6 +25,7 @@ import (
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/logger"
 	"github.com/buildpack/libbuildpack/platform"
+	"github.com/buildpack/libbuildpack/services"
 	"github.com/buildpack/libbuildpack/stack"
 )
 
@@ -56,6 +57,9 @@ type Detect struct {
 	// Platform represents components contributed by the platform to the buildpack.
 	Platform platform.Platform
 
+	// Services represents the services bound to the application.
+	Services services.Services
+
 	// Stack is the stack currently available to the application.
 	Stack stack.Stack
 }
@@ -85,8 +89,8 @@ func (d Detect) Pass(buildPlan buildplan.BuildPlan) (int, error) {
 
 // String makes Detect satisfy the Stringer interface.
 func (d Detect) String() string {
-	return fmt.Sprintf("Detect{ Application: %s, Buildpack: %s, BuildPlan: %s, BuildPlanWriter: %v, Logger: %s, Platform: %s, Stack: %s }",
-		d.Application, d.Buildpack, d.BuildPlan, d.BuildPlanWriter, d.Logger, d.Platform, d.Stack)
+	return fmt.Sprintf("Detect{ Application: %s, Buildpack: %s, BuildPlan: %s, BuildPlanWriter: %v, Logger: %s, Platform: %s, Services: %s, Stack: %s }",
+		d.Application, d.Buildpack, d.BuildPlan, d.BuildPlanWriter, d.Logger, d.Platform, d.Services, d.Stack)
 }
 
 // DefaultDetect creates a new instance of Detect using default values.
@@ -120,6 +124,11 @@ func DefaultDetect() (Detect, error) {
 		return Detect{}, err
 	}
 
+	services, err := services.DefaultServices(platform, logger)
+	if err != nil {
+		return Detect{}, err
+	}
+
 	stack, err := stack.DefaultStack(logger)
 	if err != nil {
 		return Detect{}, err
@@ -132,6 +141,7 @@ func DefaultDetect() (Detect, error) {
 		buildPlanWriter,
 		logger,
 		platform,
+		services,
 		stack,
 	}, nil
 }

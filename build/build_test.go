@@ -79,6 +79,7 @@ test-key = "test-value"
 			g.Expect(b.Layers).NotTo(BeZero())
 			g.Expect(b.Logger).NotTo(BeZero())
 			g.Expect(b.Platform).NotTo(BeZero())
+			g.Expect(b.Services).NotTo(BeZero())
 			g.Expect(b.Stack).NotTo(BeZero())
 		})
 
