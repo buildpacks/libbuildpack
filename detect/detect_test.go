@@ -80,6 +80,7 @@ test-key = "test-value"
 			g.Expect(d.BuildPlanWriter).NotTo(BeZero())
 			g.Expect(d.Logger).NotTo(BeZero())
 			g.Expect(d.Platform).NotTo(BeZero())
+			g.Expect(d.Services).NotTo(BeZero())
 			g.Expect(d.Stack).NotTo(BeZero())
 		})
 
