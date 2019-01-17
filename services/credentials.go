@@ -26,6 +26,7 @@ import (
 // only extract values at startup/runtime and not embed them in image.
 type Credentials []string
 
+// UnmarshalJSON makes Credentials satisfy the json.Unmarshaler interface.
 func (c *Credentials) UnmarshalJSON(text []byte) error {
 	var in map[string]interface{}
 

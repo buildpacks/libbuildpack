@@ -20,6 +20,7 @@ import (
 	"fmt"
 )
 
+// Service represents a service bound to the application.
 type Service struct {
 	// BindingName is the binding name of this service.
 	BindingName string `json:"binding_name"`
