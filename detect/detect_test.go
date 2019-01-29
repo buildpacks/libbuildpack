@@ -41,7 +41,7 @@ func TestDetect(t *testing.T) {
 
 		it("contains default values", func() {
 			defer internal.ReplaceWorkingDirectory(t, root)()
-			defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+			defer internal.ReplaceEnv(t, "CNB_STACK_ID", "test-stack")()
 			defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
 
 			console, e := internal.ReplaceConsole(t)
@@ -86,7 +86,7 @@ test-key = "test-value"
 
 		it("returns code when erroring", func() {
 			defer internal.ReplaceWorkingDirectory(t, root)()
-			defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+			defer internal.ReplaceEnv(t, "CNB_STACK_ID", "test-stack")()
 			defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
 
 			internal.TouchTestFile(t, root, "buildpack.toml")
@@ -99,7 +99,7 @@ test-key = "test-value"
 
 		it("returns 100 when failing", func() {
 			defer internal.ReplaceWorkingDirectory(t, root)()
-			defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+			defer internal.ReplaceEnv(t, "CNB_STACK_ID", "test-stack")()
 			defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
 
 			internal.TouchTestFile(t, root, "buildpack.toml")
@@ -112,7 +112,7 @@ test-key = "test-value"
 
 		it("returns 0 and BuildPlan when passing", func() {
 			defer internal.ReplaceWorkingDirectory(t, root)()
-			defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack")()
+			defer internal.ReplaceEnv(t, "CNB_STACK_ID", "test-stack")()
 			defer internal.ReplaceArgs(t, filepath.Join(root, "bin", "test"), filepath.Join(root, "platform"), filepath.Join(root, "plan.toml"))()
 
 			internal.TouchTestFile(t, root, "buildpack.toml")
