@@ -33,18 +33,26 @@ func TestStack(t *testing.T) {
 
 		g := NewGomegaWithT(t)
 
+		it("extracts value from CNB_STACK_ID", func() {
+			defer internal.ReplaceEnv(t, "CNB_STACK_ID", "test-stack-name")()
+
+			g.Expect(stack.DefaultStack(logger.Logger{})).To(Equal(stack.Stack("test-stack-name")))
+		})
+
 		it("extracts value from PACK_STACK_ID", func() {
 			defer internal.ReplaceEnv(t, "PACK_STACK_ID", "test-stack-name")()
 
 			g.Expect(stack.DefaultStack(logger.Logger{})).To(Equal(stack.Stack("test-stack-name")))
 		})
 
-		it("returns error when PACK_STACK_ID not set", func() {
+		it("returns error when CNB AND PACK_STACK_ID not set", func() {
+			defer internal.ProtectEnv(t, "CNB_STACK_ID")()
 			defer internal.ProtectEnv(t, "PACK_STACK_ID")()
+			g.Expect(os.Unsetenv("CNB_STACK_ID")).Should(Succeed())
 			g.Expect(os.Unsetenv("PACK_STACK_ID")).Should(Succeed())
 
 			_, err := stack.DefaultStack(logger.Logger{})
-			g.Expect(err).To(MatchError("PACK_STACK_ID not set"))
+			g.Expect(err).To(MatchError("CNB_STACK_ID not set"))
 		})
 	}, spec.Report(report.Terminal{}))
 }

@@ -91,7 +91,7 @@ func TestServices(t *testing.T) {
 					Tags:         []string{"postgres", "postgresql", "relational"},
 				},
 				{
-					Credentials:  services.Credentials{"hostname", "username", "password"},
+					Credentials:  services.Credentials{"hostname", "password", "username"},
 					InstanceName: "mysendgrid",
 					Label:        "sendgrid",
 					Plan:         "free",

@@ -18,6 +18,7 @@ package services
 
 import (
 	"encoding/json"
+	"sort"
 )
 
 // Credentials is the collection of credential keys.
@@ -38,5 +39,6 @@ func (c *Credentials) UnmarshalJSON(text []byte) error {
 		*c = append(*c, key)
 	}
 
+	sort.Strings(*c)
 	return nil
 }

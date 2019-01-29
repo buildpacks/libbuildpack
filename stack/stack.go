@@ -25,11 +25,15 @@ import (
 
 type Stack string
 
-// DefaultStack creates a new instance of Stack, extracting the name from the PACK_STACK_ID environment variable.
+// DefaultStack creates a new instance of Stack, extracting the name from the CNB_STACK_ID environment variable.
 func DefaultStack(logger logger.Logger) (Stack, error) {
-	s, ok := os.LookupEnv("PACK_STACK_ID")
+	s, ok := os.LookupEnv("CNB_STACK_ID")
 	if !ok {
-		return "", fmt.Errorf("PACK_STACK_ID not set")
+		s, ok = os.LookupEnv("PACK_STACK_ID")  // TODO: Remove once PACK_STACK_ID removed from lifecycle
+	}
+
+	if !ok {
+		return "", fmt.Errorf("CNB_STACK_ID not set")
 	}
 
 	stack := Stack(s)
