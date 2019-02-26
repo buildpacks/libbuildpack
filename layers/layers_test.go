@@ -44,13 +44,32 @@ func TestLayers(t *testing.T) {
 			g.Expect(layer.Root).To(Equal(filepath.Join(root, "test-layer")))
 		})
 
-		it("writes launch metadata", func() {
-			g.Expect(layers.Layers{Root: root}.WriteMetadata(layers.Metadata{
+		it("writes application metadata", func() {
+			g.Expect(layers.Layers{Root: root}.WriteApplicationMetadata(layers.Metadata{
 				Processes: layers.Processes{
 					layers.Process{Type: "web", Command: "command-1"},
 					layers.Process{Type: "task", Command: "command-2"},
 				},
+				Slices: layers.Slices{
+					layers.Slice{Paths: []string{"/slice-1/path-1", "/slice-1/path-2"}},
+					layers.Slice{Paths: []string{"/slice-2/path-1", "/slice-2/path-2"}},
+				},
 			})).To(Succeed())
+
+			g.Expect(filepath.Join(root, "app.toml")).To(internal.HaveContent(`[[processes]]
+  type = "web"
+  command = "command-1"
+
+[[processes]]
+  type = "task"
+  command = "command-2"
+
+[[slices]]
+  paths = ["/slice-1/path-1", "/slice-1/path-2"]
+
+[[slices]]
+  paths = ["/slice-2/path-1", "/slice-2/path-2"]
+`))
 
 			g.Expect(filepath.Join(root, "launch.toml")).To(internal.HaveContent(`[[processes]]
   type = "web"
@@ -59,6 +78,12 @@ func TestLayers(t *testing.T) {
 [[processes]]
   type = "task"
   command = "command-2"
+
+[[slices]]
+  paths = ["/slice-1/path-1", "/slice-1/path-2"]
+
+[[slices]]
+  paths = ["/slice-2/path-1", "/slice-2/path-2"]
 `))
 		})
 	}, spec.Report(report.Terminal{}))
