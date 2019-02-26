@@ -32,6 +32,11 @@ func TestLayers(t *testing.T) {
 
 		g := NewGomegaWithT(t)
 
+		type metadata struct {
+			Alpha string
+			Bravo int
+		}
+
 		var root string
 
 		it.Before(func() {
@@ -84,6 +89,15 @@ func TestLayers(t *testing.T) {
 
 [[slices]]
   paths = ["/slice-2/path-1", "/slice-2/path-2"]
+`))
+		})
+
+		it("writes persistent metadata", func() {
+			g.Expect(layers.Layers{Root: root}.WritePersistentMetadata(metadata{"test-value", 1})).To(Succeed())
+
+			g.Expect(filepath.Join(root, "store.toml")).To(internal.HaveContent(`[metadata]
+  Alpha = "test-value"
+  Bravo = 1
 `))
 		})
 	}, spec.Report(report.Terminal{}))
