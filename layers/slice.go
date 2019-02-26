@@ -20,16 +20,16 @@ import (
 	"fmt"
 )
 
-// Metadata represents metadata about the Launch.
-type Metadata struct {
-	// Processes is a collection of processes.
-	Processes Processes `toml:"processes"`
+// Slices is a collection of Slice instances.
+type Slices []Slice
 
-	// Slices is a collection of slices.
-	Slices Slices `toml:"slices"`
+// Slice represents metadata about a slice.
+type Slice struct {
+	// Paths are the contents of the slice.
+	Paths []string `toml:"paths"`
 }
 
-// String makes Metadata satisfy the Stringer interface.
-func (m Metadata) String() string {
-	return fmt.Sprintf("Metadata{ Processes: %s, Slices: %s }", m.Processes, m.Slices)
+// String makes Slice satisfy the Stringer interface.
+func (s Slice) String() string {
+	return fmt.Sprintf("Slice{ Paths: %s }", s.Paths)
 }
