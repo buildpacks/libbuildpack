@@ -58,6 +58,20 @@ func (l Layers) WriteApplicationMetadata(metadata Metadata) error {
 	return internal.WriteTomlFile(f, 0644, metadata)
 }
 
+// WritePersistentMetadata writes persistent metadata to the filesystem.
+func (l Layers) WritePersistentMetadata(metadata interface{}) error {
+	f := filepath.Join(l.Root, "store.toml")
+
+	pm := persistentMetadata{Metadata: metadata}
+
+	l.logger.Debug("Writing persistent metadata: %s <= %s", f, pm)
+	return internal.WriteTomlFile(f, 0644, pm)
+}
+
+type persistentMetadata struct {
+	Metadata interface{} `toml:"metadata"`
+}
+
 // NewLayers creates a new Logger instance.
 func NewLayers(root string, logger logger.Logger) Layers {
 	return Layers{root, logger}
