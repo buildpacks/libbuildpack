@@ -84,14 +84,14 @@ func TestServices(t *testing.T) {
 			g.Expect(s).To(Equal(services.Services{
 				{
 					BindingName:  "elephantsql-binding-c6c60",
-					Credentials:  services.Credentials{"uri"},
+					Credentials:  services.Credentials{"uri": "postgres://exampleuser:examplepass@babar.elephantsql.com:5432/exampleuser"},
 					InstanceName: "elephantsql-c6c60",
 					Label:        "elephantsql",
 					Plan:         "turtle",
 					Tags:         []string{"postgres", "postgresql", "relational"},
 				},
 				{
-					Credentials:  services.Credentials{"hostname", "password", "username"},
+					Credentials:  services.Credentials{"hostname": "smtp.sendgrid.net", "password": "HCHMOYluTv", "username": "QvsXMbJ3rK"},
 					InstanceName: "mysendgrid",
 					Label:        "sendgrid",
 					Plan:         "free",
