@@ -55,5 +55,20 @@ func TestBuildPlan(t *testing.T) {
 				"bravo": buildplan.Dependency{},
 			}))
 		})
+
+		it("performs a shallow merge", func() {
+			b := buildplan.BuildPlan{"test-key-1": buildplan.Dependency{}}
+
+			b.Merge(
+				buildplan.BuildPlan{"test-key-2": buildplan.Dependency{}},
+				buildplan.BuildPlan{"test-key-3": buildplan.Dependency{}},
+			)
+
+			g.Expect(b).To(Equal(buildplan.BuildPlan{
+				"test-key-1": buildplan.Dependency{},
+				"test-key-2": buildplan.Dependency{},
+				"test-key-3": buildplan.Dependency{},
+			}))
+		})
 	}, spec.Report(report.Terminal{}))
 }
