@@ -49,5 +49,23 @@ func TestEnvironmentVariables(t *testing.T) {
 			g.Expect(os.Getenv("TEST_KEY_2")).To(Equal("test-value-2"))
 		})
 
+		it("unsets all platform environment variables", func(){
+			root := internal.ScratchDir(t, "platform")
+			defer internal.ProtectEnv(t, "TEST_KEY_1", "TEST_KEY_2")()
+
+			internal.WriteTestFile(t, filepath.Join(root, "env", "TEST_KEY_1"), "test-value-1")
+			internal.WriteTestFile(t, filepath.Join(root, "env", "TEST_KEY_2"), "test-value-2")
+
+			platform, err := platform.DefaultPlatform(root, logger.Logger{})
+			g.Expect(err).NotTo(HaveOccurred())
+
+			g.Expect(platform.EnvironmentVariables.SetAll()).To(Succeed())
+			g.Expect(platform.EnvironmentVariables.UnsetAll()).To(Succeed())
+			_, testKey1IsPresent := os.LookupEnv("TEST_KEY_1")
+			_, testKey2IsPresent := os.LookupEnv("TEST_KEY_2")
+			g.Expect(testKey1IsPresent).To(BeFalse())
+			g.Expect(testKey2IsPresent).To(BeFalse())
+		})
+
 	}, spec.Report(report.Terminal{}))
 }

@@ -17,9 +17,11 @@
 package platform
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/buildpack/libbuildpack/logger"
 )
@@ -36,6 +38,28 @@ func (e EnvironmentVariables) SetAll() error {
 	}
 
 	return nil
+}
+
+// UnsetAll unsets all of the environment variable content in the current process environment.
+func (e EnvironmentVariables) UnsetAll() error {
+	for key := range e {
+		if err := os.Unsetenv(key); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// String makes EnvironmentVariables satisfy the Stringer interface.
+func (e EnvironmentVariables) String() string {
+	var entries []string
+
+	for k, v := range e {
+		entries = append(entries, fmt.Sprintf("%s: %s", k, v))
+	}
+
+	return fmt.Sprintf("EnvironmentVariables{ %s }", strings.Join(entries, ", "))
 }
 
 func environmentVariables(root string, logger logger.Logger) (EnvironmentVariables, error) {
