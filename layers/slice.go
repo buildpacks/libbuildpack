@@ -16,10 +16,6 @@
 
 package layers
 
-import (
-	"fmt"
-)
-
 // Slices is a collection of Slice instances.
 type Slices []Slice
 
@@ -27,9 +23,4 @@ type Slices []Slice
 type Slice struct {
 	// Paths are the contents of the slice.
 	Paths []string `toml:"paths"`
-}
-
-// String makes Slice satisfy the Stringer interface.
-func (s Slice) String() string {
-	return fmt.Sprintf("Slice{ Paths: %s }", s.Paths)
 }

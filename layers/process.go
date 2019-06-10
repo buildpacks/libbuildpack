@@ -16,10 +16,6 @@
 
 package layers
 
-import (
-	"fmt"
-)
-
 // Processes is a collection of Process instances.
 type Processes []Process
 
@@ -30,9 +26,4 @@ type Process struct {
 
 	// Command is the command of the process.
 	Command string `toml:"command"`
-}
-
-// String makes Process satisfy the Stringer interface.
-func (p Process) String() string {
-	return fmt.Sprintf("Process{ Type: %s, Command: %s }", p.Type, p.Command)
 }

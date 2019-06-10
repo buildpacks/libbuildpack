@@ -17,8 +17,6 @@
 package platform
 
 import (
-	"fmt"
-
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/logger"
 )
@@ -32,12 +30,6 @@ type Platform struct {
 	EnvironmentVariables EnvironmentVariables
 
 	logger logger.Logger
-}
-
-// String makes Platform satisfy the Stringer interface.
-func (p Platform) String() string {
-	return fmt.Sprintf("Platform{ Root: %s, EnvironmentVariables: %s, logger: %s }",
-		p.Root, p.EnvironmentVariables, p.logger)
 }
 
 // DefaultPlatform creates a new instance of Platform.

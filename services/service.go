@@ -16,10 +16,6 @@
 
 package services
 
-import (
-	"fmt"
-)
-
 // Service represents a service bound to the application.
 type Service struct {
 	// BindingName is the binding name of this service.
@@ -39,10 +35,4 @@ type Service struct {
 
 	// Tags is the collection of tags of the service.
 	Tags []string `json:"tags"`
-}
-
-// String makes Service satisfy the Stringer interface.
-func (s Service) String() string {
-	return fmt.Sprintf("Service{ BindingName: %s, Credentials: %s, InstanceName: %s, Label: %s, Plan: %s, Tags: %s }",
-		s.BindingName, s.Credentials, s.InstanceName, s.Label, s.Plan, s.Tags)
 }

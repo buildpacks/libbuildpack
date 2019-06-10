@@ -17,9 +17,7 @@
 package buildplan
 
 import (
-	"fmt"
 	"os"
-	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/buildpack/libbuildpack/internal"
@@ -50,17 +48,6 @@ func (b BuildPlan) Merge(buildPlans ...BuildPlan) {
 // Write writes the build plan.
 func (b BuildPlan) Write(writer Writer) error {
 	return writer(b)
-}
-
-// String makes BuildPlan satisfy the Stringer interface.
-func (b BuildPlan) String() string {
-	var entries []string
-
-	for k, v := range b {
-		entries = append(entries, fmt.Sprintf("%s: %s", k, v))
-	}
-
-	return fmt.Sprintf("BuildPlan{ %s }", strings.Join(entries, ", "))
 }
 
 // Writer is a function write writes the contents of a BuildPlan

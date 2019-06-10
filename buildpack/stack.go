@@ -16,10 +16,6 @@
 
 package buildpack
 
-import (
-	"fmt"
-)
-
 // Stack represents metadata about the stacks associated with the buildpack.
 type Stack struct {
 	// ID is the globally unique identifier of the stack.
@@ -30,11 +26,6 @@ type Stack struct {
 
 	// RunImages are the suggested sources for stacks if the platform is unaware of the stack id.
 	RunImages RunImages `toml:"run-images"`
-}
-
-// String makes Stack satisfy the Stringer interface.
-func (s Stack) String() string {
-	return fmt.Sprintf("Stack{ ID: %s, BuildImages: %s, RunImages: %s }", s.ID, s.BuildImages, s.RunImages)
 }
 
 // BuildImages is a collection of BuildImages.

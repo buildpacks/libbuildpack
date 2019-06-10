@@ -66,11 +66,6 @@ func (l Logger) IsInfoEnabled() bool {
 	return l.info != nil
 }
 
-// String makes Logger satisfy the Stringer interface.
-func (l Logger) String() string {
-	return fmt.Sprintf("Logger{ debug: %t, info: %t }", l.debug != nil, l.info != nil)
-}
-
 // DefaultLogger creates a new instance of Logger, suppressing debug output unless BP_DEBUG is set.
 func DefaultLogger(platform string) (Logger, error) {
 	_, e := os.LookupEnv("BP_DEBUG")

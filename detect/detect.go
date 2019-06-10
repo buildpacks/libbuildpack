@@ -17,8 +17,6 @@
 package detect
 
 import (
-	"fmt"
-
 	"github.com/buildpack/libbuildpack/application"
 	"github.com/buildpack/libbuildpack/buildpack"
 	"github.com/buildpack/libbuildpack/buildplan"
@@ -85,12 +83,6 @@ func (d Detect) Pass(buildPlan buildplan.BuildPlan) (int, error) {
 	}
 
 	return PassStatusCode, nil
-}
-
-// String makes Detect satisfy the Stringer interface.
-func (d Detect) String() string {
-	return fmt.Sprintf("Detect{ Application: %s, Buildpack: %s, BuildPlan: %s, BuildPlanWriter: %v, Logger: %s, Platform: %s, Services: %s, Stack: %s }",
-		d.Application, d.Buildpack, d.BuildPlan, d.BuildPlanWriter, d.Logger, d.Platform, d.Services, d.Stack)
 }
 
 // DefaultDetect creates a new instance of Detect using default values.

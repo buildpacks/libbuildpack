@@ -17,7 +17,6 @@
 package application
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/buildpack/libbuildpack/internal"
@@ -30,11 +29,6 @@ type Application struct {
 	Root string
 
 	logger logger.Logger
-}
-
-// String makes Application satisfy the Stringer interface.
-func (a Application) String() string {
-	return fmt.Sprintf("Application{ Root: %s, logger: %s }", a.Root, a.logger)
 }
 
 // DefaultApplication creates a new instance of Application, extracting the Root path from the working directory.

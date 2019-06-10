@@ -16,10 +16,6 @@
 
 package buildplan
 
-import (
-	"fmt"
-)
-
 // Dependency represents a dependency in a build.
 type Dependency struct {
 	// Version is the optional dependency version.
@@ -27,11 +23,6 @@ type Dependency struct {
 
 	// Metadata is additional metadata attached to the dependency.
 	Metadata Metadata `toml:"metadata"`
-}
-
-// String makes Dependency satisfy the Stringer interface.
-func (d Dependency) String() string {
-	return fmt.Sprintf("Dependency{ Version: %s, Metadata: %s }", d.Version, d.Metadata)
 }
 
 // Metadata is additional metadata attached to a dependency.

@@ -16,10 +16,6 @@
 
 package layers
 
-import (
-	"fmt"
-)
-
 // Metadata represents metadata about the Launch.
 type Metadata struct {
 	// Processes is a collection of processes.
@@ -27,9 +23,4 @@ type Metadata struct {
 
 	// Slices is a collection of slices.
 	Slices Slices `toml:"slices"`
-}
-
-// String makes Metadata satisfy the Stringer interface.
-func (m Metadata) String() string {
-	return fmt.Sprintf("Metadata{ Processes: %s, Slices: %s }", m.Processes, m.Slices)
 }
