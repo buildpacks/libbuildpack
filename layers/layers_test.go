@@ -47,6 +47,9 @@ func TestLayers(t *testing.T) {
 			layer, err := layers.Layers{Root: root}.Layer("test-layer")
 			g.Expect(err).NotTo(HaveOccurred())
 			g.Expect(layer.Root).To(Equal(filepath.Join(root, "test-layer")))
+			exists, err := internal.FileExists(layer.Root)
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(exists).Should(BeTrue())
 		})
 
 		it("writes application metadata", func() {
