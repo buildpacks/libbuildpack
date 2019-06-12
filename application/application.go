@@ -18,6 +18,7 @@ package application
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/logger"
@@ -29,6 +30,12 @@ type Application struct {
 	Root string
 
 	logger logger.Logger
+}
+
+// FileExists returns true if the file exists with the application root.
+func (a Application) FileExists(file string) (bool, error) {
+	af := filepath.Join(a.Root, file)
+	return internal.FileExists(af)
 }
 
 // DefaultApplication creates a new instance of Application, extracting the Root path from the working directory.

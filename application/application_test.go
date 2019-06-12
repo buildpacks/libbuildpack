@@ -17,6 +17,9 @@
 package application_test
 
 import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/buildpack/libbuildpack/application"
@@ -28,18 +31,61 @@ import (
 )
 
 func TestApplication(t *testing.T) {
-	spec.Run(t, "Application", func(t *testing.T, _ spec.G, it spec.S) {
+	spec.Run(t, "Application", func(t *testing.T, when spec.G, it spec.S) {
 
 		g := NewGomegaWithT(t)
 
-		it("extracts root from working directory", func() {
-			root := internal.ScratchDir(t, "application")
-			defer internal.ReplaceWorkingDirectory(t, root)()
+		var (
+			root      string
+			app       application.Application
+			wdCleanUp func()
+		)
 
-			application, err := application.DefaultApplication(logger.Logger{})
+		it.Before(func() {
+			root = internal.ScratchDir(t, "application")
+			wdCleanUp = internal.ReplaceWorkingDirectory(t, root)
+			var err error
+			app, err = application.DefaultApplication(logger.Logger{})
 			g.Expect(err).NotTo(HaveOccurred())
+		})
 
-			g.Expect(application.Root).To(Equal(root))
+		it.After(func() {
+			wdCleanUp()
+		})
+
+		it("extracts root from working directory", func() {
+			g.Expect(app.Root).To(Equal(root))
+		})
+
+		when("file existence checks", func() {
+
+			it("exists in root", func() {
+				file := "exists.txt"
+				err := ioutil.WriteFile(filepath.Join(app.Root, file), []byte("content"), 0600)
+				g.Expect(err).NotTo(HaveOccurred())
+
+				exists, err := app.FileExists(file)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(exists).Should(BeTrue())
+			})
+
+			it("exists in subdir", func() {
+				file := "subdir/subdir2/exists.txt"
+				err := os.MkdirAll(filepath.Dir(filepath.Join(app.Root, file)), 0700)
+				g.Expect(err).NotTo(HaveOccurred())
+				err = ioutil.WriteFile(filepath.Join(app.Root, file), []byte("content"), 0600)
+				g.Expect(err).NotTo(HaveOccurred())
+
+				exists, err := app.FileExists(file)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(exists).Should(BeTrue())
+			})
+
+			it("does not exist", func() {
+				exists, err := app.FileExists("doesnotexist.txt")
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(exists).Should(BeFalse())
+			})
 		})
 	}, spec.Report(report.Terminal{}))
 }

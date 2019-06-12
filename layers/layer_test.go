@@ -17,6 +17,8 @@
 package layers_test
 
 import (
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -46,7 +48,9 @@ func TestLayer(t *testing.T) {
 
 			it.Before(func() {
 				root = internal.ScratchDir(t, "layer")
-				layer = layers.Layers{Root: root}.Layer("test-layer")
+				var err error
+				layer, err = layers.Layers{Root: root}.Layer("test-layer")
+				g.Expect(err).NotTo(HaveOccurred())
 			})
 
 			it("reads layer content metadata", func() {
@@ -176,5 +180,56 @@ launch = true
 
 			})
 		})
+
+		it("layer root extracted", func() {
+			layerName := "test-layer"
+			root := internal.ScratchDir(t, "layer")
+			l, err := layers.Layers{Root: root}.Layer(layerName)
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(l.Root).To(Equal(filepath.Join(root, layerName)))
+		})
+
+		when("file existence checks", func() {
+
+			var (
+				l layers.Layer
+			)
+
+			it.Before(func() {
+				root := internal.ScratchDir(t, "layer")
+				var err error
+				l, err = layers.Layers{Root: root}.Layer("test-layer")
+				g.Expect(err).NotTo(HaveOccurred())
+			})
+
+			it("exists in root", func() {
+				file := "exists.txt"
+				err := ioutil.WriteFile(filepath.Join(l.Root, file), []byte("content"), 0600)
+				g.Expect(err).NotTo(HaveOccurred())
+
+				exists, err := l.FileExists(file)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(exists).Should(BeTrue())
+			})
+
+			it("exists in subdir", func() {
+				file := "subdir/subdir2/exists.txt"
+				err := os.MkdirAll(filepath.Dir(filepath.Join(l.Root, file)), 0700)
+				g.Expect(err).NotTo(HaveOccurred())
+				err = ioutil.WriteFile(filepath.Join(l.Root, file), []byte("content"), 0600)
+				g.Expect(err).NotTo(HaveOccurred())
+
+				exists, err := l.FileExists(file)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(exists).Should(BeTrue())
+			})
+
+			it("does not exist", func() {
+				exists, err := l.FileExists("doesnotexist.txt")
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(exists).Should(BeFalse())
+			})
+		})
+
 	}, spec.Report(report.Terminal{}))
 }

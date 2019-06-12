@@ -18,6 +18,7 @@ package layers
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/buildpack/libbuildpack/internal"
@@ -33,9 +34,13 @@ type Layers struct {
 }
 
 // Layer creates a Layer with a specified name.
-func (l Layers) Layer(name string) Layer {
+func (l Layers) Layer(name string) (Layer, error) {
 	metadata := filepath.Join(l.Root, fmt.Sprintf("%s.toml", name))
-	return Layer{filepath.Join(l.Root, name), metadata, l.logger}
+	d := filepath.Join(l.Root, name)
+	if err := os.Mkdir(d, 0755); err != nil {
+		return Layer{}, err
+	}
+	return Layer{filepath.Join(l.Root, name), metadata, l.logger}, nil
 }
 
 // WriteApplicationMetadata writes application metadata to the filesystem.

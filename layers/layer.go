@@ -184,6 +184,12 @@ func (l Layer) addSharedEnvFile(file string, format string, args ...interface{})
 	return l.addEnvFile(filepath.Join("env", file), format, args...)
 }
 
+// FileExists returns true if the file exists with the layer root.
+func (l Layer) FileExists(file string) (bool, error) {
+	af := filepath.Join(l.Root, file)
+	return internal.FileExists(af)
+}
+
 type layerMetadata struct {
 	Build    bool        `toml:"build"`
 	Cache    bool        `toml:"cache"`

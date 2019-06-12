@@ -44,8 +44,8 @@ func TestLayers(t *testing.T) {
 		})
 
 		it("creates a layer with root based on its name", func() {
-			layer := layers.Layers{Root: root}.Layer("test-layer")
-
+			layer, err := layers.Layers{Root: root}.Layer("test-layer")
+			g.Expect(err).NotTo(HaveOccurred())
 			g.Expect(layer.Root).To(Equal(filepath.Join(root, "test-layer")))
 		})
 
