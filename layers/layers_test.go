@@ -61,21 +61,6 @@ func TestLayers(t *testing.T) {
 				},
 			})).To(Succeed())
 
-			g.Expect(filepath.Join(root, "app.toml")).To(internal.HaveContent(`[[processes]]
-  type = "web"
-  command = "command-1"
-
-[[processes]]
-  type = "task"
-  command = "command-2"
-
-[[slices]]
-  paths = ["/slice-1/path-1", "/slice-1/path-2"]
-
-[[slices]]
-  paths = ["/slice-2/path-1", "/slice-2/path-2"]
-`))
-
 			g.Expect(filepath.Join(root, "launch.toml")).To(internal.HaveContent(`[[processes]]
   type = "web"
   command = "command-1"
