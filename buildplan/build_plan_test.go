@@ -21,7 +21,7 @@ import (
 
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/buildpack/libbuildpack/internal"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -29,7 +29,7 @@ import (
 func TestBuildPlan(t *testing.T) {
 	spec.Run(t, "BuildPlan", func(t *testing.T, _ spec.G, it spec.S) {
 
-		g := NewGomegaWithT(t)
+		g := gomega.NewWithT(t)
 
 		it("unmarshals from os.Stdin", func() {
 			console, d := internal.ReplaceConsole(t)
@@ -45,9 +45,9 @@ func TestBuildPlan(t *testing.T) {
 `)
 
 			buildPlan := buildplan.BuildPlan{}
-			g.Expect(buildPlan.Init()).To(Succeed())
+			g.Expect(buildPlan.Init()).To(gomega.Succeed())
 
-			g.Expect(buildPlan).To(Equal(buildplan.BuildPlan{
+			g.Expect(buildPlan).To(gomega.Equal(buildplan.BuildPlan{
 				"alpha": buildplan.Dependency{
 					Version:  "alpha-version",
 					Metadata: buildplan.Metadata{"test-key": "test-value"},
@@ -64,7 +64,7 @@ func TestBuildPlan(t *testing.T) {
 				buildplan.BuildPlan{"test-key-3": buildplan.Dependency{}},
 			)
 
-			g.Expect(b).To(Equal(buildplan.BuildPlan{
+			g.Expect(b).To(gomega.Equal(buildplan.BuildPlan{
 				"test-key-1": buildplan.Dependency{},
 				"test-key-2": buildplan.Dependency{},
 				"test-key-3": buildplan.Dependency{},

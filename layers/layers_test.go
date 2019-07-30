@@ -22,7 +22,7 @@ import (
 
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/layers"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -30,7 +30,7 @@ import (
 func TestLayers(t *testing.T) {
 	spec.Run(t, "Layers", func(t *testing.T, _ spec.G, it spec.S) {
 
-		g := NewGomegaWithT(t)
+		g := gomega.NewWithT(t)
 
 		type metadata struct {
 			Alpha string
@@ -46,7 +46,7 @@ func TestLayers(t *testing.T) {
 		it("creates a layer with root based on its name", func() {
 			layer := layers.Layers{Root: root}.Layer("test-layer")
 
-			g.Expect(layer.Root).To(Equal(filepath.Join(root, "test-layer")))
+			g.Expect(layer.Root).To(gomega.Equal(filepath.Join(root, "test-layer")))
 		})
 
 		it("writes application metadata", func() {
@@ -59,7 +59,7 @@ func TestLayers(t *testing.T) {
 					layers.Slice{Paths: []string{"/slice-1/path-1", "/slice-1/path-2"}},
 					layers.Slice{Paths: []string{"/slice-2/path-1", "/slice-2/path-2"}},
 				},
-			})).To(Succeed())
+			})).To(gomega.Succeed())
 
 			g.Expect(filepath.Join(root, "launch.toml")).To(internal.HaveContent(`[[processes]]
   type = "web"
@@ -78,7 +78,7 @@ func TestLayers(t *testing.T) {
 		})
 
 		it("writes persistent metadata", func() {
-			g.Expect(layers.Layers{Root: root}.WritePersistentMetadata(metadata{"test-value", 1})).To(Succeed())
+			g.Expect(layers.Layers{Root: root}.WritePersistentMetadata(metadata{"test-value", 1})).To(gomega.Succeed())
 
 			g.Expect(filepath.Join(root, "store.toml")).To(internal.HaveContent(`[metadata]
   Alpha = "test-value"

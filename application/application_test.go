@@ -22,7 +22,7 @@ import (
 	"github.com/buildpack/libbuildpack/application"
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/logger"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -30,16 +30,16 @@ import (
 func TestApplication(t *testing.T) {
 	spec.Run(t, "Application", func(t *testing.T, _ spec.G, it spec.S) {
 
-		g := NewGomegaWithT(t)
+		g := gomega.NewWithT(t)
 
 		it("extracts root from working directory", func() {
 			root := internal.ScratchDir(t, "application")
 			defer internal.ReplaceWorkingDirectory(t, root)()
 
 			application, err := application.DefaultApplication(logger.Logger{})
-			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(err).NotTo(gomega.HaveOccurred())
 
-			g.Expect(application.Root).To(Equal(root))
+			g.Expect(application.Root).To(gomega.Equal(root))
 		})
 	}, spec.Report(report.Terminal{}))
 }

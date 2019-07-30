@@ -24,7 +24,7 @@ import (
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/logger"
 	"github.com/buildpack/libbuildpack/platform"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -32,7 +32,7 @@ import (
 func TestEnvironmentVariables(t *testing.T) {
 	spec.Run(t, "EnvironmentVariables", func(t *testing.T, _ spec.G, it spec.S) {
 
-		g := NewGomegaWithT(t)
+		g := gomega.NewWithT(t)
 
 		it("sets all platform environment variables", func() {
 			root := internal.ScratchDir(t, "platform")
@@ -42,11 +42,11 @@ func TestEnvironmentVariables(t *testing.T) {
 			internal.WriteTestFile(t, filepath.Join(root, "env", "TEST_KEY_2"), "test-value-2")
 
 			platform, err := platform.DefaultPlatform(root, logger.Logger{})
-			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(err).NotTo(gomega.HaveOccurred())
 
-			g.Expect(platform.EnvironmentVariables.SetAll()).To(Succeed())
-			g.Expect(os.Getenv("TEST_KEY_1")).To(Equal("test-value-1"))
-			g.Expect(os.Getenv("TEST_KEY_2")).To(Equal("test-value-2"))
+			g.Expect(platform.EnvironmentVariables.SetAll()).To(gomega.Succeed())
+			g.Expect(os.Getenv("TEST_KEY_1")).To(gomega.Equal("test-value-1"))
+			g.Expect(os.Getenv("TEST_KEY_2")).To(gomega.Equal("test-value-2"))
 		})
 
 	}, spec.Report(report.Terminal{}))

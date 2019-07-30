@@ -22,7 +22,7 @@ import (
 
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/layers"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -30,7 +30,7 @@ import (
 func TestLayer(t *testing.T) {
 	spec.Run(t, "Layer", func(t *testing.T, when spec.G, it spec.S) {
 
-		g := NewGomegaWithT(t)
+		g := gomega.NewWithT(t)
 
 		when("layer content metadata", func() {
 
@@ -56,16 +56,16 @@ Bravo = 1
 `)
 
 				var actual metadata
-				g.Expect(layer.ReadMetadata(&actual)).To(Succeed())
+				g.Expect(layer.ReadMetadata(&actual)).To(gomega.Succeed())
 
-				g.Expect(actual).To(Equal(metadata{"test-value", 1}))
+				g.Expect(actual).To(gomega.Equal(metadata{"test-value", 1}))
 			})
 
 			it("does not read layer content metadata if it does not exist", func() {
 				var actual metadata
-				g.Expect(layer.ReadMetadata(&actual)).To(Succeed())
+				g.Expect(layer.ReadMetadata(&actual)).To(gomega.Succeed())
 
-				g.Expect(actual).To(Equal(metadata{}))
+				g.Expect(actual).To(gomega.Equal(metadata{}))
 			})
 
 			it("remove layer content metadata", func() {
@@ -74,13 +74,13 @@ Alpha = "test-value"
 Bravo = 1
 `)
 
-				g.Expect(layer.RemoveMetadata()).To(Succeed())
-				g.Expect("").NotTo(BeAnExistingFile())
+				g.Expect(layer.RemoveMetadata()).To(gomega.Succeed())
+				g.Expect("").NotTo(gomega.BeAnExistingFile())
 			})
 
 			it("writes layer content metadata", func() {
 				g.Expect(layer.WriteMetadata(metadata{"test-value", 1},
-					layers.Build, layers.Cache, layers.Launch)).To(Succeed())
+					layers.Build, layers.Cache, layers.Launch)).To(gomega.Succeed())
 
 				g.Expect(filepath.Join(root, "test-layer.toml")).To(internal.HaveContent(`build = true
 cache = true
@@ -93,7 +93,7 @@ launch = true
 			})
 
 			it("writes a profile file", func() {
-				g.Expect(layer.WriteProfile("test-name", "%s-%d", "test-string", 1)).To(Succeed())
+				g.Expect(layer.WriteProfile("test-name", "%s-%d", "test-string", 1)).To(gomega.Succeed())
 
 				g.Expect(filepath.Join(root, "test-layer", "profile.d", "test-name")).To(internal.HaveContent("test-string-1"))
 			})
@@ -114,19 +114,19 @@ launch = true
 			when("build", func() {
 
 				it("writes an append environment file", func() {
-					g.Expect(layer.AppendBuildEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+					g.Expect(layer.AppendBuildEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
 
 					g.Expect(filepath.Join(root, "env.build", "TEST_NAME.append")).To(internal.HaveContent("test-string-1"))
 				})
 
 				it("writes an append path environment file", func() {
-					g.Expect(layer.AppendPathBuildEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+					g.Expect(layer.AppendPathBuildEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
 
 					g.Expect(filepath.Join(root, "env.build", "TEST_NAME")).To(internal.HaveContent("test-string-1"))
 				})
 
 				it("writes an override environment file", func() {
-					g.Expect(layer.OverrideBuildEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+					g.Expect(layer.OverrideBuildEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
 
 					g.Expect(filepath.Join(root, "env.build", "TEST_NAME.override")).To(internal.HaveContent("test-string-1"))
 				})
@@ -135,19 +135,19 @@ launch = true
 			when("launch", func() {
 
 				it("writes an append environment file", func() {
-					g.Expect(layer.AppendLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+					g.Expect(layer.AppendLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
 
 					g.Expect(filepath.Join(root, "env.launch", "TEST_NAME.append")).To(internal.HaveContent("test-string-1"))
 				})
 
 				it("writes an append path environment file", func() {
-					g.Expect(layer.AppendPathLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+					g.Expect(layer.AppendPathLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
 
 					g.Expect(filepath.Join(root, "env.launch", "TEST_NAME")).To(internal.HaveContent("test-string-1"))
 				})
 
 				it("writes an override environment file", func() {
-					g.Expect(layer.OverrideLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+					g.Expect(layer.OverrideLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
 
 					g.Expect(filepath.Join(root, "env.launch", "TEST_NAME.override")).To(internal.HaveContent("test-string-1"))
 				})
@@ -157,19 +157,19 @@ launch = true
 			when("shared", func() {
 
 				it("writes an append environment file", func() {
-					g.Expect(layer.AppendSharedEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+					g.Expect(layer.AppendSharedEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
 
 					g.Expect(filepath.Join(root, "env", "TEST_NAME.append")).To(internal.HaveContent("test-string-1"))
 				})
 
 				it("writes an append path environment file", func() {
-					g.Expect(layer.AppendPathSharedEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+					g.Expect(layer.AppendPathSharedEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
 
 					g.Expect(filepath.Join(root, "env", "TEST_NAME")).To(internal.HaveContent("test-string-1"))
 				})
 
 				it("writes an override environment file", func() {
-					g.Expect(layer.OverrideSharedEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(Succeed())
+					g.Expect(layer.OverrideSharedEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
 
 					g.Expect(filepath.Join(root, "env", "TEST_NAME.override")).To(internal.HaveContent("test-string-1"))
 				})

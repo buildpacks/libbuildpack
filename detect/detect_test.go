@@ -23,7 +23,7 @@ import (
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/buildpack/libbuildpack/detect"
 	"github.com/buildpack/libbuildpack/internal"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -31,7 +31,7 @@ import (
 func TestDetect(t *testing.T) {
 	spec.Run(t, "Detect", func(t *testing.T, _ spec.G, it spec.S) {
 
-		g := NewGomegaWithT(t)
+		g := gomega.NewWithT(t)
 
 		var root string
 
@@ -62,7 +62,7 @@ test-key = "test-value"
 `)
 
 			d, err := detect.DefaultDetect()
-			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(err).NotTo(gomega.HaveOccurred())
 
 			console.In(t, `[alpha]
   version = "alpha-version"
@@ -72,16 +72,16 @@ test-key = "test-value"
   name = "bravo-name"
 `)
 
-			g.Expect(d.BuildPlan.Init()).To(Succeed())
+			g.Expect(d.BuildPlan.Init()).To(gomega.Succeed())
 
-			g.Expect(d.Application).NotTo(BeZero())
-			g.Expect(d.Buildpack).NotTo(BeZero())
-			g.Expect(d.BuildPlan).NotTo(BeZero())
-			g.Expect(d.BuildPlanWriter).NotTo(BeZero())
-			g.Expect(d.Logger).NotTo(BeZero())
-			g.Expect(d.Platform).NotTo(BeZero())
-			g.Expect(d.Services).NotTo(BeZero())
-			g.Expect(d.Stack).NotTo(BeZero())
+			g.Expect(d.Application).NotTo(gomega.BeZero())
+			g.Expect(d.Buildpack).NotTo(gomega.BeZero())
+			g.Expect(d.BuildPlan).NotTo(gomega.BeZero())
+			g.Expect(d.BuildPlanWriter).NotTo(gomega.BeZero())
+			g.Expect(d.Logger).NotTo(gomega.BeZero())
+			g.Expect(d.Platform).NotTo(gomega.BeZero())
+			g.Expect(d.Services).NotTo(gomega.BeZero())
+			g.Expect(d.Stack).NotTo(gomega.BeZero())
 		})
 
 		it("returns code when erroring", func() {
@@ -92,9 +92,9 @@ test-key = "test-value"
 			internal.TouchTestFile(t, root, "buildpack.toml")
 
 			d, err := detect.DefaultDetect()
-			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(err).NotTo(gomega.HaveOccurred())
 
-			g.Expect(d.Error(42)).To(Equal(42))
+			g.Expect(d.Error(42)).To(gomega.Equal(42))
 		})
 
 		it("returns 100 when failing", func() {
@@ -105,9 +105,9 @@ test-key = "test-value"
 			internal.TouchTestFile(t, root, "buildpack.toml")
 
 			d, err := detect.DefaultDetect()
-			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(err).NotTo(gomega.HaveOccurred())
 
-			g.Expect(d.Fail()).To(Equal(detect.FailStatusCode))
+			g.Expect(d.Fail()).To(gomega.Equal(detect.FailStatusCode))
 		})
 
 		it("returns 0 and BuildPlan when passing", func() {
@@ -118,11 +118,11 @@ test-key = "test-value"
 			internal.TouchTestFile(t, root, "buildpack.toml")
 
 			d, err := detect.DefaultDetect()
-			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(err).NotTo(gomega.HaveOccurred())
 
 			g.Expect(d.Pass(buildplan.BuildPlan{
 				"alpha": buildplan.Dependency{Version: "test-version"},
-			})).To(Equal(detect.PassStatusCode))
+			})).To(gomega.Equal(detect.PassStatusCode))
 
 			g.Expect(filepath.Join(root, "plan.toml")).To(internal.HaveContent(`[alpha]
   version = "test-version"

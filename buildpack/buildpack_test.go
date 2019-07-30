@@ -23,7 +23,7 @@ import (
 	"github.com/buildpack/libbuildpack/buildpack"
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/logger"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -31,7 +31,7 @@ import (
 func TestBuildpack(t *testing.T) {
 	spec.Run(t, "Buildpack", func(t *testing.T, _ spec.G, it spec.S) {
 
-		g := NewGomegaWithT(t)
+		g := gomega.NewWithT(t)
 
 		it("unmarshals default from buildpack.toml", func() {
 			root := internal.ScratchDir(t, "buildpack")
@@ -51,7 +51,7 @@ run-images = ["run-image-tag"]
 test-key = "test-value"
 `)
 
-			g.Expect(buildpack.DefaultBuildpack(logger.Logger{})).To(Equal(buildpack.Buildpack{
+			g.Expect(buildpack.DefaultBuildpack(logger.Logger{})).To(gomega.Equal(buildpack.Buildpack{
 				Info: buildpack.Info{
 					ID:      "buildpack-id",
 					Name:    "buildpack-name",

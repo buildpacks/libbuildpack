@@ -23,7 +23,7 @@ import (
 	"github.com/buildpack/libbuildpack/logger"
 	"github.com/buildpack/libbuildpack/platform"
 	"github.com/buildpack/libbuildpack/services"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -31,13 +31,13 @@ import (
 func TestServices(t *testing.T) {
 	spec.Run(t, "Services", func(t *testing.T, _ spec.G, it spec.S) {
 
-		g := NewGomegaWithT(t)
+		g := gomega.NewWithT(t)
 
 		it("is empty with no CNB_SERVICES", func() {
 			s, err := services.DefaultServices(platform.Platform{}, logger.Logger{})
-			g.Expect(err).To(Succeed())
+			g.Expect(err).To(gomega.Succeed())
 
-			g.Expect(s).To(BeEmpty())
+			g.Expect(s).To(gomega.BeEmpty())
 		})
 
 		it("parses CNB_SERVICES", func() {
@@ -79,9 +79,9 @@ func TestServices(t *testing.T) {
 }`)()
 
 			s, err := services.DefaultServices(platform.Platform{}, logger.Logger{})
-			g.Expect(err).To(Succeed())
+			g.Expect(err).To(gomega.Succeed())
 
-			g.Expect(s).To(Equal(services.Services{
+			g.Expect(s).To(gomega.Equal(services.Services{
 				{
 					BindingName:  "elephantsql-binding-c6c60",
 					Credentials:  services.Credentials{"uri": "postgres://exampleuser:examplepass@babar.elephantsql.com:5432/exampleuser"},

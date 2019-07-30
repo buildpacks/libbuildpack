@@ -23,7 +23,7 @@ import (
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/logger"
 	"github.com/buildpack/libbuildpack/platform"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -31,7 +31,7 @@ import (
 func TestPlatform(t *testing.T) {
 	spec.Run(t, "Platform", func(t *testing.T, _ spec.G, it spec.S) {
 
-		g := NewGomegaWithT(t)
+		g := gomega.NewWithT(t)
 
 		it("enumerates platform environment variables", func() {
 			root := internal.ScratchDir(t, "platform")
@@ -39,9 +39,9 @@ func TestPlatform(t *testing.T) {
 			internal.WriteTestFile(t, filepath.Join(root, "env", "TEST_KEY"), "test-value")
 
 			platform, err := platform.DefaultPlatform(root, logger.Logger{})
-			g.Expect(err).To(Succeed())
+			g.Expect(err).To(gomega.Succeed())
 
-			g.Expect(platform.EnvironmentVariables).To(HaveKey("TEST_KEY"))
+			g.Expect(platform.EnvironmentVariables).To(gomega.HaveKey("TEST_KEY"))
 		})
 	}, spec.Report(report.Terminal{}))
 }

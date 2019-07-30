@@ -22,7 +22,7 @@ import (
 
 	"github.com/buildpack/libbuildpack/internal"
 	"github.com/buildpack/libbuildpack/logger"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -30,7 +30,7 @@ import (
 func TestLogger(t *testing.T) {
 	spec.Run(t, "Logger", func(t *testing.T, _ spec.G, it spec.S) {
 
-		g := NewGomegaWithT(t)
+		g := gomega.NewWithT(t)
 
 		it("writes output to debug writer", func() {
 			var debug bytes.Buffer
@@ -38,7 +38,7 @@ func TestLogger(t *testing.T) {
 			logger := logger.NewLogger(&debug, nil)
 			logger.Debug("%s %s", "test-string-1", "test-string-2")
 
-			g.Expect(debug.String()).To(Equal("test-string-1 test-string-2\n"))
+			g.Expect(debug.String()).To(gomega.Equal("test-string-1 test-string-2\n"))
 		})
 
 		it("does not write to debug if not configured", func() {
@@ -49,11 +49,11 @@ func TestLogger(t *testing.T) {
 		it("reports debug enabled when configured", func() {
 			var debug bytes.Buffer
 
-			g.Expect(logger.NewLogger(&debug, nil).IsDebugEnabled()).To(BeTrue())
+			g.Expect(logger.NewLogger(&debug, nil).IsDebugEnabled()).To(gomega.BeTrue())
 		})
 
 		it("reports debug disabled when not configured", func() {
-			g.Expect(logger.NewLogger(nil, nil).IsDebugEnabled()).To(BeFalse())
+			g.Expect(logger.NewLogger(nil, nil).IsDebugEnabled()).To(gomega.BeFalse())
 		})
 
 		it("writes output to info writer", func() {
@@ -62,7 +62,7 @@ func TestLogger(t *testing.T) {
 			logger := logger.NewLogger(nil, &info)
 			logger.Info("%s %s", "test-string-1", "test-string-2")
 
-			g.Expect(info.String()).To(Equal("test-string-1 test-string-2\n"))
+			g.Expect(info.String()).To(gomega.Equal("test-string-1 test-string-2\n"))
 		})
 
 		it("does not write to info if not configured", func() {
@@ -73,11 +73,11 @@ func TestLogger(t *testing.T) {
 		it("reports info enabled when configured", func() {
 			var info bytes.Buffer
 
-			g.Expect(logger.NewLogger(nil, &info).IsInfoEnabled()).To(BeTrue())
+			g.Expect(logger.NewLogger(nil, &info).IsInfoEnabled()).To(gomega.BeTrue())
 		})
 
 		it("reports info disabled when not configured", func() {
-			g.Expect(logger.NewLogger(nil, nil).IsInfoEnabled()).To(BeFalse())
+			g.Expect(logger.NewLogger(nil, nil).IsInfoEnabled()).To(gomega.BeFalse())
 		})
 
 		it("suppresses debug output", func() {
@@ -86,13 +86,13 @@ func TestLogger(t *testing.T) {
 			defer d()
 
 			logger, err := logger.DefaultLogger(root)
-			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(err).NotTo(gomega.HaveOccurred())
 
 			logger.Debug("test-debug-output")
 			logger.Info("test-info-output")
 
-			g.Expect(c.Err(t)).NotTo(ContainSubstring("test-debug-output"))
-			g.Expect(c.Out(t)).To(ContainSubstring("test-info-output"))
+			g.Expect(c.Err(t)).NotTo(gomega.ContainSubstring("test-debug-output"))
+			g.Expect(c.Out(t)).To(gomega.ContainSubstring("test-info-output"))
 		})
 
 		it("allows debug output if BP_DEBUG is set", func() {
@@ -102,13 +102,13 @@ func TestLogger(t *testing.T) {
 			defer internal.ReplaceEnv(t, "BP_DEBUG", "")()
 
 			logger, err := logger.DefaultLogger(root)
-			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(err).NotTo(gomega.HaveOccurred())
 
 			logger.Debug("test-debug-output")
 			logger.Info("test-info-output")
 
-			g.Expect(c.Err(t)).To(ContainSubstring("test-debug-output"))
-			g.Expect(c.Out(t)).To(ContainSubstring("test-info-output"))
+			g.Expect(c.Err(t)).To(gomega.ContainSubstring("test-debug-output"))
+			g.Expect(c.Out(t)).To(gomega.ContainSubstring("test-info-output"))
 		})
 
 		it("allows debug output if platform/env/BP_DEBUG is set", func() {
@@ -118,13 +118,13 @@ func TestLogger(t *testing.T) {
 			defer d()
 
 			logger, err := logger.DefaultLogger(root)
-			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(err).NotTo(gomega.HaveOccurred())
 
 			logger.Debug("test-debug-output")
 			logger.Info("test-info-output")
 
-			g.Expect(c.Err(t)).To(ContainSubstring("test-debug-output"))
-			g.Expect(c.Out(t)).To(ContainSubstring("test-info-output"))
+			g.Expect(c.Err(t)).To(gomega.ContainSubstring("test-debug-output"))
+			g.Expect(c.Out(t)).To(gomega.ContainSubstring("test-info-output"))
 		})
 	}, spec.Report(report.Terminal{}))
 }
