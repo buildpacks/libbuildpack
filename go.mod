@@ -1,5 +1,7 @@
 module github.com/buildpack/libbuildpack
 
+go 1.13
+
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/golang/protobuf v1.3.2 // indirect
@@ -13,5 +15,3 @@ require (
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.2.2 // indirect
 )
-
-go 1.13
