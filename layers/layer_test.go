@@ -119,16 +119,34 @@ launch = true
 					g.Expect(filepath.Join(root, "env.build", "TEST_NAME.append")).To(internal.HaveContent("test-string-1"))
 				})
 
-				it("writes an append path environment file", func() {
-					g.Expect(layer.AppendPathBuildEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
+				it("writes a default environment file", func() {
+					g.Expect(layer.DefaultBuildEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
 
-					g.Expect(filepath.Join(root, "env.build", "TEST_NAME")).To(internal.HaveContent("test-string-1"))
+					g.Expect(filepath.Join(root, "env.build", "TEST_NAME.default")).To(internal.HaveContent("test-string-1"))
+				})
+
+				it("writes a delimiter environment file", func() {
+					g.Expect(layer.DelimiterBuildEnv("TEST_NAME", "test-delimiter")).To(gomega.Succeed())
+
+					g.Expect(filepath.Join(root, "env.build", "TEST_NAME.delim")).To(internal.HaveContent("test-delimiter"))
 				})
 
 				it("writes an override environment file", func() {
 					g.Expect(layer.OverrideBuildEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
 
 					g.Expect(filepath.Join(root, "env.build", "TEST_NAME.override")).To(internal.HaveContent("test-string-1"))
+				})
+
+				it("writes a prepend environment file", func() {
+					g.Expect(layer.PrependBuildEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
+
+					g.Expect(filepath.Join(root, "env.build", "TEST_NAME.prepend")).To(internal.HaveContent("test-string-1"))
+				})
+
+				it("writes a prepend path environment file", func() {
+					g.Expect(layer.PrependPathBuildEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
+
+					g.Expect(filepath.Join(root, "env.build", "TEST_NAME")).To(internal.HaveContent("test-string-1"))
 				})
 			})
 
@@ -140,10 +158,16 @@ launch = true
 					g.Expect(filepath.Join(root, "env.launch", "TEST_NAME.append")).To(internal.HaveContent("test-string-1"))
 				})
 
-				it("writes an append path environment file", func() {
-					g.Expect(layer.AppendPathLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
+				it("writes a default environment file", func() {
+					g.Expect(layer.DefaultLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
 
-					g.Expect(filepath.Join(root, "env.launch", "TEST_NAME")).To(internal.HaveContent("test-string-1"))
+					g.Expect(filepath.Join(root, "env.launch", "TEST_NAME.default")).To(internal.HaveContent("test-string-1"))
+				})
+
+				it("writes a delimiter environment file", func() {
+					g.Expect(layer.DelimiterLaunchEnv("TEST_NAME", "test-delimiter")).To(gomega.Succeed())
+
+					g.Expect(filepath.Join(root, "env.launch", "TEST_NAME.delim")).To(internal.HaveContent("test-delimiter"))
 				})
 
 				it("writes an override environment file", func() {
@@ -152,6 +176,17 @@ launch = true
 					g.Expect(filepath.Join(root, "env.launch", "TEST_NAME.override")).To(internal.HaveContent("test-string-1"))
 				})
 
+				it("writes a prepend environment file", func() {
+					g.Expect(layer.PrependLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
+
+					g.Expect(filepath.Join(root, "env.launch", "TEST_NAME.prepend")).To(internal.HaveContent("test-string-1"))
+				})
+
+				it("writes a prepend path environment file", func() {
+					g.Expect(layer.PrependPathLaunchEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
+
+					g.Expect(filepath.Join(root, "env.launch", "TEST_NAME")).To(internal.HaveContent("test-string-1"))
+				})
 			})
 
 			when("shared", func() {
@@ -162,10 +197,16 @@ launch = true
 					g.Expect(filepath.Join(root, "env", "TEST_NAME.append")).To(internal.HaveContent("test-string-1"))
 				})
 
-				it("writes an append path environment file", func() {
-					g.Expect(layer.AppendPathSharedEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
+				it("writes a default environment file", func() {
+					g.Expect(layer.DefaultSharedEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
 
-					g.Expect(filepath.Join(root, "env", "TEST_NAME")).To(internal.HaveContent("test-string-1"))
+					g.Expect(filepath.Join(root, "env", "TEST_NAME.default")).To(internal.HaveContent("test-string-1"))
+				})
+
+				it("writes a delimiter environment file", func() {
+					g.Expect(layer.DelimiterSharedEnv("TEST_NAME", "test-delimiter")).To(gomega.Succeed())
+
+					g.Expect(filepath.Join(root, "env", "TEST_NAME.delim")).To(internal.HaveContent("test-delimiter"))
 				})
 
 				it("writes an override environment file", func() {
@@ -174,6 +215,17 @@ launch = true
 					g.Expect(filepath.Join(root, "env", "TEST_NAME.override")).To(internal.HaveContent("test-string-1"))
 				})
 
+				it("writes a prepend environment file", func() {
+					g.Expect(layer.PrependSharedEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
+
+					g.Expect(filepath.Join(root, "env", "TEST_NAME.prepend")).To(internal.HaveContent("test-string-1"))
+				})
+
+				it("writes a prepend path environment file", func() {
+					g.Expect(layer.PrependPathSharedEnv("TEST_NAME", "%s-%d", "test-string", 1)).To(gomega.Succeed())
+
+					g.Expect(filepath.Join(root, "env", "TEST_NAME")).To(internal.HaveContent("test-string-1"))
+				})
 			})
 		})
 	}, spec.Report(report.Terminal{}))
