@@ -81,7 +81,7 @@ func TestServices(t *testing.T) {
 			s, err := services.DefaultServices(platform.Platform{}, logger.Logger{})
 			g.Expect(err).To(gomega.Succeed())
 
-			g.Expect(s).To(gomega.Equal(services.Services{
+			g.Expect(s).To(gomega.ConsistOf(services.Services{
 				{
 					BindingName:  "elephantsql-binding-c6c60",
 					Credentials:  services.Credentials{"uri": "postgres://exampleuser:examplepass@babar.elephantsql.com:5432/exampleuser"},
