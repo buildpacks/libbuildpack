@@ -54,6 +54,7 @@ func TestLayers(t *testing.T) {
 				Processes: layers.Processes{
 					layers.Process{Type: "web", Command: "command-1"},
 					layers.Process{Type: "task", Command: "command-2", Direct: true},
+					layers.Process{Type: "other", Command: "command-3", Args: []string{"arg-1","arg-2"}, Direct: true},
 				},
 				Slices: layers.Slices{
 					layers.Slice{Paths: []string{"/slice-1/path-1", "/slice-1/path-2"}},
@@ -69,6 +70,12 @@ func TestLayers(t *testing.T) {
 [[processes]]
   type = "task"
   command = "command-2"
+  direct = true
+
+[[processes]]
+  type = "other"
+  command = "command-3"
+  args = ["arg-1", "arg-2"]
   direct = true
 
 [[slices]]
