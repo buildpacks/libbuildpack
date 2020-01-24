@@ -1,4 +1,4 @@
-module github.com/buildpack/libbuildpack/v2
+module github.com/buildpacks/libbuildpack/v2
 
 go 1.13
 
