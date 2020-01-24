@@ -23,7 +23,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/buildpack/libbuildpack/internal"
+	"github.com/buildpacks/libbuildpack/v2/internal"
 )
 
 // Logger is a type that contains references to the console output for debug and info logging levels.

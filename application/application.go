@@ -19,8 +19,8 @@ package application
 import (
 	"os"
 
-	"github.com/buildpack/libbuildpack/internal"
-	"github.com/buildpack/libbuildpack/logger"
+	"github.com/buildpacks/libbuildpack/v2/internal"
+	"github.com/buildpacks/libbuildpack/v2/logger"
 )
 
 // Application represents the application being processed by buildpacks.

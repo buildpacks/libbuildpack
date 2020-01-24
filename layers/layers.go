@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/buildpack/libbuildpack/internal"
-	"github.com/buildpack/libbuildpack/logger"
+	"github.com/buildpacks/libbuildpack/v2/internal"
+	"github.com/buildpacks/libbuildpack/v2/logger"
 )
 
 // Layers represents the layers for an application.

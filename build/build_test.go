@@ -20,9 +20,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/buildpack/libbuildpack/build"
-	"github.com/buildpack/libbuildpack/buildpackplan"
-	"github.com/buildpack/libbuildpack/internal"
+	"github.com/buildpacks/libbuildpack/v2/build"
+	"github.com/buildpacks/libbuildpack/v2/buildpackplan"
+	"github.com/buildpacks/libbuildpack/v2/internal"
 	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"

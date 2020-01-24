@@ -22,8 +22,8 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
-	"github.com/buildpack/libbuildpack/internal"
-	"github.com/buildpack/libbuildpack/logger"
+	"github.com/buildpacks/libbuildpack/v2/internal"
+	"github.com/buildpacks/libbuildpack/v2/logger"
 )
 
 // Layer represents a layer for an application.

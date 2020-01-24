@@ -19,9 +19,9 @@ package application_test
 import (
 	"testing"
 
-	"github.com/buildpack/libbuildpack/application"
-	"github.com/buildpack/libbuildpack/internal"
-	"github.com/buildpack/libbuildpack/logger"
+	"github.com/buildpacks/libbuildpack/v2/application"
+	"github.com/buildpacks/libbuildpack/v2/internal"
+	"github.com/buildpacks/libbuildpack/v2/logger"
 	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"

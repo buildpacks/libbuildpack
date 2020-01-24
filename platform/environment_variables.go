@@ -21,7 +21,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/buildpack/libbuildpack/logger"
+	"github.com/buildpacks/libbuildpack/v2/logger"
 )
 
 // EnvironmentVariables is a collection of environment variables provided by the Platform.

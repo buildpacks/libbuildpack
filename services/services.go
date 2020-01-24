@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/buildpack/libbuildpack/logger"
-	"github.com/buildpack/libbuildpack/platform"
+	"github.com/buildpacks/libbuildpack/v2/logger"
+	"github.com/buildpacks/libbuildpack/v2/platform"
 )
 
 // Services is a collection of services bound to the application.

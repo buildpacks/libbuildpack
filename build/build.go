@@ -17,15 +17,15 @@
 package build
 
 import (
-	"github.com/buildpack/libbuildpack/application"
-	"github.com/buildpack/libbuildpack/buildpack"
-	"github.com/buildpack/libbuildpack/buildpackplan"
-	"github.com/buildpack/libbuildpack/internal"
-	"github.com/buildpack/libbuildpack/layers"
-	"github.com/buildpack/libbuildpack/logger"
-	"github.com/buildpack/libbuildpack/platform"
-	"github.com/buildpack/libbuildpack/services"
-	"github.com/buildpack/libbuildpack/stack"
+	"github.com/buildpacks/libbuildpack/v2/application"
+	"github.com/buildpacks/libbuildpack/v2/buildpack"
+	"github.com/buildpacks/libbuildpack/v2/buildpackplan"
+	"github.com/buildpacks/libbuildpack/v2/internal"
+	"github.com/buildpacks/libbuildpack/v2/layers"
+	"github.com/buildpacks/libbuildpack/v2/logger"
+	"github.com/buildpacks/libbuildpack/v2/platform"
+	"github.com/buildpacks/libbuildpack/v2/services"
+	"github.com/buildpacks/libbuildpack/v2/stack"
 )
 
 // SuccessStatusCode is the status code returned for success.

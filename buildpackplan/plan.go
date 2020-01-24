@@ -20,7 +20,7 @@ import (
 	"os"
 
 	"github.com/BurntSushi/toml"
-	"github.com/buildpack/libbuildpack/logger"
+	"github.com/buildpacks/libbuildpack/v2/logger"
 )
 
 // Plan represents a contractual buildpack plan.

@@ -17,7 +17,7 @@
 package buildplan
 
 import (
-	"github.com/buildpack/libbuildpack/internal"
+	"github.com/buildpacks/libbuildpack/v2/internal"
 )
 
 // Writer is a function write writes the contents of a Plans

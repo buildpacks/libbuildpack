@@ -20,9 +20,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/buildpack/libbuildpack/internal"
-	"github.com/buildpack/libbuildpack/logger"
-	"github.com/buildpack/libbuildpack/stack"
+	"github.com/buildpacks/libbuildpack/v2/internal"
+	"github.com/buildpacks/libbuildpack/v2/logger"
+	"github.com/buildpacks/libbuildpack/v2/stack"
 	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"

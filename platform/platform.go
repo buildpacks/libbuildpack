@@ -17,8 +17,8 @@
 package platform
 
 import (
-	"github.com/buildpack/libbuildpack/internal"
-	"github.com/buildpack/libbuildpack/logger"
+	"github.com/buildpacks/libbuildpack/v2/internal"
+	"github.com/buildpacks/libbuildpack/v2/logger"
 )
 
 // Platform represents the platform contributions for an application.

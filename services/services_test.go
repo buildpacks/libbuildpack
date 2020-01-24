@@ -19,10 +19,10 @@ package services_test
 import (
 	"testing"
 
-	"github.com/buildpack/libbuildpack/internal"
-	"github.com/buildpack/libbuildpack/logger"
-	"github.com/buildpack/libbuildpack/platform"
-	"github.com/buildpack/libbuildpack/services"
+	"github.com/buildpacks/libbuildpack/v2/internal"
+	"github.com/buildpacks/libbuildpack/v2/logger"
+	"github.com/buildpacks/libbuildpack/v2/platform"
+	"github.com/buildpacks/libbuildpack/v2/services"
 	"github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"

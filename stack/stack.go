@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/buildpack/libbuildpack/logger"
+	"github.com/buildpacks/libbuildpack/v2/logger"
 )
 
 type Stack string

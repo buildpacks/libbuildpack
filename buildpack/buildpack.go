@@ -23,8 +23,8 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
-	"github.com/buildpack/libbuildpack/internal"
-	"github.com/buildpack/libbuildpack/logger"
+	"github.com/buildpacks/libbuildpack/v2/internal"
+	"github.com/buildpacks/libbuildpack/v2/logger"
 )
 
 // Buildpack represents the metadata associated with a buildpack.
