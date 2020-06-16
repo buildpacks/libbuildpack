@@ -1,4 +1,6 @@
-# `libbuildpack`
+# DEPRECATED - `libbuildpack`
+This library has been **deprecated** and is no longer maintained. Please use [libcnb](https://github.com/buildpacks/libcnb) instead.
+
 `libbuildpack` is a Go language binding of the Cloud Native Buildpack V3 API.  It is a non-opinionated implementation adding language constructs and convenience methods for working with the API.
 
 ## Usage
